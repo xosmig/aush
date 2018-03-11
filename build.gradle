@@ -1,0 +1,15 @@
+group 'com.xosmig.swdesignhw'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.google.guava:guava:24.0-jre'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
