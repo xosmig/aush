@@ -73,28 +73,28 @@ public final class StandardEnvironment implements Environment {
     }
 
     private String expandVariables(String text) {
-        boolean backspace = false;
-        StringBuilder result = new StringBuilder();
+        boolean backslash = false;
+        final StringBuilder result = new StringBuilder();
 
         for (int i = 0; i < text.length(); i++) {
-            char ch = text.charAt(i);
-            boolean wasBackspace = backspace;
+            final char ch = text.charAt(i);
+            final boolean wasBackslash = backslash;
 
             if (ch == '\\') {
-                if (wasBackspace) {
-                    backspace = false;
+                if (wasBackslash) {
+                    backslash = false;
                     continue;
                 } else {
-                    backspace = true;
+                    backslash = true;
                     result.append(ch);
                     continue;
                 }
             }
 
-            backspace = false;
+            backslash = false;
 
             // not a backspace
-            if (ch == '$' && !wasBackspace) {
+            if (ch == '$' && !wasBackslash) {
                 // expand variable
                 int beginOfVar = i + 1;
                 while (i + 1 < text.length() && Character.isLetter(text.charAt(i + 1))) {
