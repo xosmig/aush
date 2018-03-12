@@ -15,4 +15,19 @@ public final class PlainTextToken implements Token {
     public String getContent() {
         return content;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof PlainTextToken)) return false;
+
+        final PlainTextToken token = (PlainTextToken) obj;
+
+        return content.equals(token.content);
+    }
+
+    @Override
+    public int hashCode() {
+        return content.hashCode();
+    }
 }

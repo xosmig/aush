@@ -1,14 +1,15 @@
 package com.xosmig.swdesignhw.aush.commands;
 
 import com.xosmig.swdesignhw.aush.environment.Environment;
+import com.xosmig.swdesignhw.aush.token.Token;
 
-public class MultipleCommands implements Command {
-    private final Command left;
-    private final Command right;
+import java.util.List;
 
-    public MultipleCommands(Command left, Command right) {
-        this.left = left;
-        this.right = right;
+public class TokenSequenceCommand implements Command {
+    private final List<Token> tokens;
+
+    public TokenSequenceCommand(List<Token> tokens) {
+        this.tokens = tokens;
     }
 
     @Override

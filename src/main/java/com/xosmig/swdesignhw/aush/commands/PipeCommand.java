@@ -2,11 +2,11 @@ package com.xosmig.swdesignhw.aush.commands;
 
 import com.xosmig.swdesignhw.aush.environment.Environment;
 
-public class MultipleCommands implements Command {
+public class PipeCommand implements Command {
     private final Command left;
     private final Command right;
 
-    public MultipleCommands(Command left, Command right) {
+    public PipeCommand(Command left, Command right) {
         this.left = left;
         this.right = right;
     }
