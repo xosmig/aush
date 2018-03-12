@@ -3,11 +3,11 @@ package com.xosmig.swdesignhw.aush.commands;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.token.Token;
 
-public final class AssignCommand implements Command {
+public final class AssignmentCommand implements Command {
     private final String name;
     private final Token value;
 
-    public AssignCommand(String name, Token value) {
+    public AssignmentCommand(String name, Token value) {
         this.name = name;
         this.value = value;
     }

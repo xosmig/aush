@@ -4,7 +4,7 @@ import com.xosmig.swdesignhw.aush.environment.Environment;
 
 public class StandardCommandExecutor implements CommandExecutor {
     @Override
-    public Environment execute(AssignCommand cmd, Environment environment) {
+    public Environment execute(AssignmentCommand cmd, Environment environment) {
         return environment.assign(cmd.getName(), cmd.getValue());
     }
 

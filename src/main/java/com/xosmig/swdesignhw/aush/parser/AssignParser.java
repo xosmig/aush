@@ -1,7 +1,8 @@
 package com.xosmig.swdesignhw.aush.parser;
 
-import com.xosmig.swdesignhw.aush.commands.AssignCommand;
+import com.xosmig.swdesignhw.aush.commands.AssignmentCommand;
 import com.xosmig.swdesignhw.aush.commands.Command;
+import com.xosmig.swdesignhw.aush.commands.LocalAssignmentCommand;
 import com.xosmig.swdesignhw.aush.token.*;
 
 import java.util.List;
@@ -20,9 +21,20 @@ public class AssignParser implements Parser {
             return childParser.parse(text);
         }
 
-        return text.get(0).accept(new AssignmentSearch())
-                .map(res -> (Command) new AssignCommand(res.name, res.value))
-                .orElse(childParser.parse(text));
+        Optional<SearchResult> resultOpt = text.get(0).accept(new AssignmentSearch());
+
+        if (!resultOpt.isPresent()) {
+            return childParser.parse(text);
+        }
+        SearchResult result = resultOpt.get();
+        AssignmentCommand assignment = new AssignmentCommand(result.name, result.value);
+
+        if (text.size() == 1) {
+            return assignment;
+        }
+
+        return new LocalAssignmentCommand(assignment,
+                childParser.parse(text.subList(1, text.size())));
     }
 
     private static final class SearchResult {
