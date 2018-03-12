@@ -8,8 +8,12 @@ package com.xosmig.swdesignhw.aush.environment;
 public final class Word {
     private final String content;
 
-    Word(String content) {
+    public Word(String content) {
         this.content = content;
+    }
+
+    public static Word concat(Word left, Word right) {
+        return new Word(left.getContent() + right.getContent());
     }
 
     public String getContent() {

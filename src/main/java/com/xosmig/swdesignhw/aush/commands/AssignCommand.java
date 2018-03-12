@@ -1,7 +1,7 @@
 package com.xosmig.swdesignhw.aush.commands;
 
 import com.xosmig.swdesignhw.aush.environment.Environment;
-import com.xosmig.swdesignhw.aush.environment.Token;
+import com.xosmig.swdesignhw.aush.token.Token;
 
 public final class AssignCommand implements Command {
     private final String name;
