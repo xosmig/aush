@@ -16,4 +16,8 @@ public class TokenSequenceCommand implements Command {
     public Environment execute(CommandExecutor executor, Environment environment) {
         return executor.execute(this, environment);
     }
+
+    public List<Token> getTokens() {
+        return tokens;
+    }
 }

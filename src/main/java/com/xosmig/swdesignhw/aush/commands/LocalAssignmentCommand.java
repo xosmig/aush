@@ -2,6 +2,7 @@ package com.xosmig.swdesignhw.aush.commands;
 
 import com.xosmig.swdesignhw.aush.environment.Environment;
 
+// Local assignments are too d
 public class LocalAssignmentCommand implements Command {
     private final AssignmentCommand assignment;
     private final Command cmd;

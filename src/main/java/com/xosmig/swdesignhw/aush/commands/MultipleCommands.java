@@ -15,4 +15,12 @@ public class MultipleCommands implements Command {
     public Environment execute(CommandExecutor executor, Environment environment) {
         return executor.execute(this, environment);
     }
+
+    public Command getLeft() {
+        return left;
+    }
+
+    public Command getRight() {
+        return right;
+    }
 }
