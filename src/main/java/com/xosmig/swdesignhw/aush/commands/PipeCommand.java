@@ -1,6 +1,9 @@
 package com.xosmig.swdesignhw.aush.commands;
 
+import com.xosmig.swdesignhw.aush.commands.executor.CommandExecutor;
 import com.xosmig.swdesignhw.aush.environment.Environment;
+
+import java.io.IOException;
 
 public class PipeCommand implements Command {
     private final Command left;
@@ -12,7 +15,7 @@ public class PipeCommand implements Command {
     }
 
     @Override
-    public Environment execute(CommandExecutor executor, Environment environment) {
+    public Environment execute(CommandExecutor executor, Environment environment) throws IOException {
         return executor.execute(this, environment);
     }
 

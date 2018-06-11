@@ -2,6 +2,8 @@ package com.xosmig.swdesignhw.aush.environment;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,22 +14,26 @@ import com.xosmig.swdesignhw.aush.token.*;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 
+
 public final class Environment {
     private final InputStream inputStream;
     private final OutputStream outputStream;
     private final OutputStream errorStream;
+    private final Path workingDir;
     private final PMap<String, String> varValues;
 
     public Environment(InputStream inputStream, OutputStream outputStream,
-                       OutputStream errorStream) {
-        this(inputStream, outputStream, errorStream, HashTreePMap.empty());
+                       OutputStream errorStream, Path workingDir) {
+        this(inputStream, outputStream, errorStream, workingDir, HashTreePMap.empty());
     }
 
     private Environment(InputStream inputStream, OutputStream outputStream,
-                        OutputStream errorStream, PMap<String, String> varValues) {
+                        OutputStream errorStream, Path workingDir,
+                        PMap<String, String> varValues) {
         this.inputStream = inputStream;
         this.outputStream = outputStream;
         this.errorStream = errorStream;
+        this.workingDir = workingDir;
         this.varValues = varValues;
     }
 
@@ -43,29 +49,36 @@ public final class Environment {
         return errorStream;
     }
 
+    public Path getWorkingDir() { return workingDir; }
+
     public List<Word> expand(Token token) {
         return token.accept(new ListTokenExpander()).words;
     }
 
     public Environment assign(String name, Token value) {
-        return new Environment(inputStream, outputStream, errorStream,
+        return new Environment(inputStream, outputStream, errorStream, workingDir,
                 varValues.plus(name, value.accept(new StringTokenExpander()).toString()));
     }
 
     public Environment updateInputStream(InputStream newInputStream) {
-        return new Environment(newInputStream, outputStream, errorStream, varValues);
+        return new Environment(newInputStream, outputStream, errorStream, workingDir, varValues);
     }
 
     public Environment updateOutputStream(OutputStream newOutputStream) {
-        return new Environment(inputStream, newOutputStream, errorStream, varValues);
+        return new Environment(inputStream, newOutputStream, errorStream, workingDir, varValues);
     }
 
     public Environment updateErrorStream(OutputStream newErrorStream) {
-        return new Environment(inputStream, outputStream, newErrorStream, varValues);
+        return new Environment(inputStream, outputStream, newErrorStream, workingDir, varValues);
     }
 
     public Environment updateVars(Environment other) {
-        return new Environment(inputStream, outputStream, errorStream, other.varValues);
+        return new Environment(inputStream, outputStream, errorStream, workingDir, other.varValues);
+    }
+
+    public Environment changeWorkingDir(Path path) {
+        return new Environment(inputStream, outputStream, errorStream, workingDir.resolve(path),
+                varValues);
     }
 
     private String expandVariables(String text) {

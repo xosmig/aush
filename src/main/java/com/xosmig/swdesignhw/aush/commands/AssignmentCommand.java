@@ -1,7 +1,10 @@
 package com.xosmig.swdesignhw.aush.commands;
 
+import com.xosmig.swdesignhw.aush.commands.executor.CommandExecutor;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.token.Token;
+
+import java.io.IOException;
 
 public final class AssignmentCommand implements Command {
     private final String name;
@@ -13,7 +16,7 @@ public final class AssignmentCommand implements Command {
     }
 
     @Override
-    public Environment execute(CommandExecutor executor, Environment environment) {
+    public Environment execute(CommandExecutor executor, Environment environment) throws IOException {
         return executor.execute(this, environment);
     }
 

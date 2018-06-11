@@ -1,8 +1,10 @@
 package com.xosmig.swdesignhw.aush.commands;
 
+import com.xosmig.swdesignhw.aush.commands.executor.CommandExecutor;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.token.Token;
 
+import java.io.IOException;
 import java.util.List;
 
 public class TokenSequenceCommand implements Command {
@@ -13,8 +15,8 @@ public class TokenSequenceCommand implements Command {
     }
 
     @Override
-    public Environment execute(CommandExecutor executor, Environment environment) {
-        return executor.execute(this, environment);
+    public Environment execute(CommandExecutor executor, Environment env) throws IOException {
+        return executor.execute(this, env);
     }
 
     public List<Token> getTokens() {

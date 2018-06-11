@@ -1,13 +1,12 @@
 package com.xosmig.swdesignhw.aush.parser;
 
-import com.sun.tools.corba.se.idl.InvalidArgument;
 import com.xosmig.swdesignhw.aush.token.*;
 
 import java.util.*;
 
 public class Tokenizer {
 
-    public List<Token> tokenize(String text) throws InvalidArgument {
+    public List<Token> tokenize(String text) throws IllegalArgumentException {
         return new Helper(text).tokenize();
     }
 
@@ -22,7 +21,7 @@ public class Tokenizer {
             this.text = text;
         }
 
-        public List<Token> tokenize() throws InvalidArgument {
+        public List<Token> tokenize() throws IllegalArgumentException {
             boolean backslash = false;
 
             for (int idx = 0; idx < text.length();) {
@@ -75,7 +74,7 @@ public class Tokenizer {
             concatenated.clear();
         }
 
-        private Optional<Integer> tryQuote(int idx) throws InvalidArgument {
+        private Optional<Integer> tryQuote(int idx) throws IllegalArgumentException {
             char ch = text.charAt(idx);
             if (ch == '\'' || ch == '\"') {
                 if (wasBackslash) {
@@ -85,7 +84,7 @@ public class Tokenizer {
                     endPlainTextToken();
                     int rightQuote = text.substring(idx + 1).indexOf('\'');
                     if (rightQuote == -1) {
-                        throw new InvalidArgument("Quote without a pair");
+                        throw new IllegalArgumentException("Quote without a pair");
                     }
                     if (ch == '\'') {
                         addAtomicToken(new SingleQuotedToken(text.substring(idx + 1, rightQuote)));
