@@ -17,6 +17,13 @@ public final class PlainTextToken implements Token {
     }
 
     @Override
+    public String toString() {
+        return "PlainTextToken{" +
+                "content='" + content + '\'' +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof PlainTextToken)) return false;

@@ -7,7 +7,7 @@ import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.parser.ParseErrorException;
 import com.xosmig.swdesignhw.aush.parser.Parser;
 import com.xosmig.swdesignhw.aush.parser.StandardFullParser;
-import com.xosmig.swdesignhw.aush.parser.Tokenizer;
+import com.xosmig.swdesignhw.aush.token.Tokenizer;
 
 import java.io.*;
 import java.nio.file.Paths;

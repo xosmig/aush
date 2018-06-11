@@ -1,4 +1,4 @@
-package com.xosmig.swdesignhw.aush.parser;
+package com.xosmig.swdesignhw.aush.token;
 
 import com.xosmig.swdesignhw.aush.token.*;
 
@@ -6,6 +6,9 @@ import java.util.*;
 
 public class Tokenizer {
 
+    /**
+     * Splits `text` into a list of tokens.
+     */
     public List<Token> tokenize(String text) throws IllegalArgumentException {
         return new Helper(text).tokenize();
     }
@@ -46,7 +49,7 @@ public class Tokenizer {
                         tryWhitespace(curIdx).orElseGet(() ->
                         tryPlainText(curIdx))));
             }
-            endAllTokens();
+            endConcatenatedSequence();
 
             return result;
         }
@@ -68,7 +71,7 @@ public class Tokenizer {
             buffer.delete(0, buffer.length()); // clean the buffer
         }
 
-        private void endAllTokens() {
+        private void endConcatenatedSequence() {
             endPlainTextToken();
             concatenated.stream().reduce(ConcatenatedToken::new).ifPresent(result::add);
             concatenated.clear();
@@ -82,7 +85,7 @@ public class Tokenizer {
                     return Optional.of(idx + 1);
                 } else {
                     endPlainTextToken();
-                    int rightQuote = text.substring(idx + 1).indexOf('\'');
+                    int rightQuote = idx + 1 + text.substring(idx + 1).indexOf(ch);
                     if (rightQuote == -1) {
                         throw new IllegalArgumentException("Quote without a pair");
                     }
@@ -103,7 +106,7 @@ public class Tokenizer {
                 if (wasBackslash) {
                     addChar(ch);
                 } else {
-                    endAllTokens();
+                    endConcatenatedSequence();
                     addAtomicToken(new PlainTextToken(Character.toString(ch)));
                 }
                 return Optional.of(idx + 1);
@@ -113,12 +116,8 @@ public class Tokenizer {
 
         private Optional<Integer> tryWhitespace(int idx) {
             char ch = text.charAt(idx);
-            if (ch == '|' || ch == ';') {
-                if (wasBackslash) {
-                    addChar(ch);
-                } else {
-                    endAllTokens();
-                }
+            if (Character.isWhitespace(ch)) {
+                endConcatenatedSequence();
                 return Optional.of(idx + 1);
             }
             return Optional.empty();
