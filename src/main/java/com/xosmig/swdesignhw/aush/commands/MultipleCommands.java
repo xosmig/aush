@@ -4,6 +4,7 @@ import com.xosmig.swdesignhw.aush.commands.executor.CommandExecutor;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class MultipleCommands implements Command {
     private final Command left;
@@ -25,5 +26,27 @@ public class MultipleCommands implements Command {
 
     public Command getRight() {
         return right;
+    }
+
+    @Override
+    public String toString() {
+        return "MultipleCommands{" +
+                "left=" + left +
+                ", right=" + right +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof MultipleCommands)) return false;
+        final MultipleCommands commands = (MultipleCommands) obj;
+        return Objects.equals(left, commands.left) &&
+                Objects.equals(right, commands.right);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
     }
 }
