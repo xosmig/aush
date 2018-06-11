@@ -16,6 +16,11 @@ public final class SemicolonToken implements Token {
     }
 
     @Override
+    public String backToString() {
+        return ";";
+    }
+
+    @Override
     public String toString() {
         return "SemicolonToken";
     }

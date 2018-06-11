@@ -8,33 +8,35 @@ import com.xosmig.swdesignhw.aush.token.*;
 import java.util.List;
 import java.util.Optional;
 
-public class AssignParser implements Parser {
-    private final Parser childParser;
+public final class AssignmentParser implements Parser {
+    private final Parser nextParser;
 
-    public AssignParser(Parser childParser) {
-        this.childParser = childParser;
+    public AssignmentParser(Parser nextParser) {
+        this.nextParser = nextParser;
     }
 
     @Override
     public Command parse(List<Token> text) throws ParseErrorException {
         if (text.isEmpty()) {
-            return childParser.parse(text);
+            return nextParser.parse(text);
         }
 
         Optional<SearchResult> resultOpt = text.get(0).accept(new AssignmentSearch());
-
         if (!resultOpt.isPresent()) {
-            return childParser.parse(text);
+            return nextParser.parse(text);
         }
         SearchResult result = resultOpt.get();
-        AssignmentCommand assignment = new AssignmentCommand(result.name, result.value);
 
-        if (text.size() == 1) {
-            return assignment;
+        if (!AssignmentCommand.isValidName(result.name)) {
+            throw new ParseErrorException("Invalid variable name in assignment: `" + result.name + "`");
         }
 
-        return new LocalAssignmentCommand(assignment,
-                childParser.parse(text.subList(1, text.size())));
+        if (text.size() > 1) {
+            throw new ParseErrorException("Unexpected token after an assignment: `" +
+                    text.get(1).backToString() + "`");
+        }
+
+        return new AssignmentCommand(result.name, result.value);
     }
 
     private static final class SearchResult {
@@ -66,31 +68,30 @@ public class AssignParser implements Parser {
             }
 
             String name = token.getContent().substring(0, idx);
-            // check that the name consists only of letters
-            for (int i = 0; i < name.length(); i++) {
-                if (!Character.isLetter(name.charAt(i))) {
-                    return Optional.empty();
-                }
+            if (!AssignmentCommand.isValidName(name)) {
+                return Optional.empty();
             }
 
-            return Optional.of(new SearchResult(name,
-                    new PlainTextToken(token.getContent().substring(idx + 1))));
+            SearchResult result =
+                    new SearchResult(name, new PlainTextToken(token.getContent().substring(idx + 1)));
+            return Optional.of(result);
         }
 
         @Override
         public Optional<SearchResult> visit(ConcatenatedToken token) {
-            return token.getLeft().accept(this).map(cmd ->
-                    new SearchResult(cmd.name, new ConcatenatedToken(cmd.value, token.getRight())));
+            return token.getLeft().accept(this).map(cmd -> {
+                return new SearchResult(cmd.name, new ConcatenatedToken(cmd.value, token.getRight()));
+            });
         }
 
         @Override
         public Optional<SearchResult> visit(SemicolonToken token) {
-            return null; // TODO
+            return Optional.empty();
         }
 
         @Override
         public Optional<SearchResult> visit(PipeToken token) {
-            return null; // TODO
+            return Optional.empty();
         }
     }
 }

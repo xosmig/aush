@@ -16,6 +16,11 @@ public final class PipeToken implements Token {
     }
 
     @Override
+    public String backToString() {
+        return "|";
+    }
+
+    @Override
     public String toString() {
         return "PipeToken";
     }

@@ -6,9 +6,9 @@ import com.xosmig.swdesignhw.aush.token.Token;
 
 import java.util.List;
 
-public class TokenSequenceParser implements Parser {
+public final class TokenSequenceParser implements Parser {
     @Override
-    public Command parse(List<Token> text) throws ParseErrorException {
+    public Command parse(List<Token> text) {
         return new TokenSequenceCommand(text);
     }
 }

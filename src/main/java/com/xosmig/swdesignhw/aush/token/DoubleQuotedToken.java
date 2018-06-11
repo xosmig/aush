@@ -19,6 +19,11 @@ public final class DoubleQuotedToken implements Token {
     }
 
     @Override
+    public String backToString() {
+        return "\"" + content + "\"";
+    }
+
+    @Override
     public String toString() {
         return "DoubleQuotedToken{" +
                 "content='" + content + '\'' +
@@ -35,7 +40,6 @@ public final class DoubleQuotedToken implements Token {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(content);
     }
 }

@@ -7,7 +7,7 @@ import com.xosmig.swdesignhw.aush.token.Token;
 
 import java.util.List;
 
-public class PipeParser implements Parser {
+public final class PipeParser implements Parser {
     private final Parser childParser;
 
     public PipeParser(Parser childParser) {

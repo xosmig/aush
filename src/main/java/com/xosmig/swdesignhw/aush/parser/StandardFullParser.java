@@ -5,11 +5,11 @@ import com.xosmig.swdesignhw.aush.token.Token;
 
 import java.util.List;
 
-public class StandardFullParser implements Parser {
+public final class StandardFullParser implements Parser {
     private final Parser parser =
             new SemicolonParser(
                     new PipeParser(
-                            new AssignParser(
+                            new AssignmentParser(
                                     new TokenSequenceParser())));
 
     @Override

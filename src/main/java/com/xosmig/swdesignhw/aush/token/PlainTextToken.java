@@ -17,6 +17,11 @@ public final class PlainTextToken implements Token {
     }
 
     @Override
+    public String backToString() {
+        return content;
+    }
+
+    @Override
     public String toString() {
         return "PlainTextToken{" +
                 "content='" + content + '\'' +

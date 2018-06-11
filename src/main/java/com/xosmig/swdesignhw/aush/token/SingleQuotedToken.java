@@ -19,6 +19,11 @@ public final class SingleQuotedToken implements Token {
     }
 
     @Override
+    public String backToString() {
+        return "'" + content + "'";
+    }
+
+    @Override
     public String toString() {
         return "SingleQuotedToken{" +
                 "content='" + content + '\'' +

@@ -25,6 +25,11 @@ public final class ConcatenatedToken implements Token {
     }
 
     @Override
+    public String backToString() {
+        return getLeft().backToString() + getRight().backToString();
+    }
+
+    @Override
     public String toString() {
         return "{" + left + " @@ " + right + "}";
     }

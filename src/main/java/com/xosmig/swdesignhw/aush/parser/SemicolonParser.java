@@ -7,7 +7,7 @@ import com.xosmig.swdesignhw.aush.token.Token;
 
 import java.util.List;
 
-public class SemicolonParser implements Parser {
+public final class SemicolonParser implements Parser {
     private final Parser childParser;
 
     public SemicolonParser(Parser childParser) {
