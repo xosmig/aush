@@ -82,5 +82,15 @@ public class AssignParser implements Parser {
             return token.getLeft().accept(this).map(cmd ->
                     new SearchResult(cmd.name, new ConcatenatedToken(cmd.value, token.getRight())));
         }
+
+        @Override
+        public Optional<SearchResult> visit(SemicolonToken token) {
+            return null; // TODO
+        }
+
+        @Override
+        public Optional<SearchResult> visit(PipeToken token) {
+            return null; // TODO
+        }
     }
 }

@@ -8,4 +8,8 @@ public interface TokenVisitor<T> {
     T visit(PlainTextToken token);
 
     T visit(ConcatenatedToken token);
+
+    T visit(SemicolonToken token);
+
+    T visit(PipeToken token);
 }

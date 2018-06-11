@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -61,5 +62,18 @@ public class TokenizerTest {
                 ),
                 new PlainTextToken("!"));
         assertEquals(Collections.singletonList(expected), tokenizer.tokenize("hello,' world'!"));
+    }
+
+    @Test
+    public void testSemicolonAndPipe() {
+        List<Token> expected = Arrays.asList(new PlainTextToken("foo"), SemicolonToken.get(),
+                new PlainTextToken("bar"), PipeToken.get(), new PlainTextToken("baz"));
+        assertEquals(expected, tokenizer.tokenize("foo;bar|baz"));
+    }
+
+    @Test
+    public void testEscapedSymbols() {
+        assertEquals(Collections.singletonList(new PlainTextToken("  \\foo bar\tbaz\n")),
+                tokenizer.tokenize("\\ \\ \\\\foo\\ \\bar\\\tbaz\\\n"));
     }
 }

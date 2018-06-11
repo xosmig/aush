@@ -163,6 +163,16 @@ public final class Environment {
             }
             return new ExpansionResult(result, left.leftSeparated, right.rightSeparated);
         }
+
+        @Override
+        public ExpansionResult visit(SemicolonToken token) {
+            return null; // TODO
+        }
+
+        @Override
+        public ExpansionResult visit(PipeToken token) {
+            return null; // TODO
+        }
     }
 
     private final class StringTokenExpander implements TokenVisitor<StringBuilder> {
@@ -184,6 +194,16 @@ public final class Environment {
         @Override
         public StringBuilder visit(ConcatenatedToken token) {
             return token.getLeft().accept(this).append(token.getRight().accept(this));
+        }
+
+        @Override
+        public StringBuilder visit(SemicolonToken token) {
+            return null; // TODO
+        }
+
+        @Override
+        public StringBuilder visit(PipeToken token) {
+            return null; // TODO
         }
     }
 
