@@ -1,4 +1,4 @@
-package com.xosmig.swdesignhw.aush.parser;
+package com.xosmig.swdesignhw.aush.token;
 
 import com.xosmig.swdesignhw.aush.token.*;
 import org.junit.Test;

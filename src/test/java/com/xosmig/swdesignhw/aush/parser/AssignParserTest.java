@@ -8,38 +8,38 @@ import com.xosmig.swdesignhw.aush.token.PlainTextToken;
 import com.xosmig.swdesignhw.aush.token.Token;
 import org.junit.Test;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-public class AssignParserTest {
-    private final Command mockCommand = mock(Command.class);
-    private final Parser mockParser = mock(Parser.class);
-    private final AssignmentParser assignParser = new AssignmentParser(mockParser);
-
-    private Command parseToken(Token token) throws Exception {
-        return assignParser.parse(Collections.singletonList(token));
+public class AssignParserTest extends ParserTestBase {
+    public AssignParserTest() {
+        this.parser = new AssignmentParser(mockParser);
     }
 
     @Test
     public void testNoAssignment() throws Exception {
+        final Command mockCommand = mock(Command.class);
         when(mockParser.parse(any())).thenReturn(mockCommand);
-        assertEquals(mockCommand, parseToken(new PlainTextToken("hello")));
+        List<Token> tokens = asList(new PlainTextToken("hello"));
+        assertEquals(mockCommand, parseTokensList(tokens));
+        verify(mockParser).parse(tokens);
     }
 
     @Test
     public void testSimpleAssignment() throws Exception {
         assertEquals(new AssignmentCommand("myVar", new PlainTextToken("5")),
-                parseToken(new PlainTextToken("myVar=5")));
+                parseTokens(new PlainTextToken("myVar=5")));
     }
 
     @Test
     public void testQuotedAssignment() throws Exception {
-        Command result = parseToken(new ConcatenatedToken(
+        Command result = parseTokens(new ConcatenatedToken(
                 new PlainTextToken("myVar="), new DoubleQuotedToken("hello")));
         assertTrue(result instanceof AssignmentCommand);
         AssignmentCommand assignment = (AssignmentCommand) result;
@@ -48,7 +48,7 @@ public class AssignParserTest {
 
     @Test
     public void testConcatenatedAssignment() throws Exception {
-        Command result = parseToken(new ConcatenatedToken(
+        Command result = parseTokens(new ConcatenatedToken(
                 new PlainTextToken("myVar=hello,"), new DoubleQuotedToken(" world")));
         assertTrue(result instanceof AssignmentCommand);
         AssignmentCommand assignment = (AssignmentCommand) result;
