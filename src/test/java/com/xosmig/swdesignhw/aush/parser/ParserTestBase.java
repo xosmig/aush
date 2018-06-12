@@ -1,6 +1,9 @@
 package com.xosmig.swdesignhw.aush.parser;
 
 import com.xosmig.swdesignhw.aush.commands.Command;
+import com.xosmig.swdesignhw.aush.token.CmdString;
+import com.xosmig.swdesignhw.aush.token.DoubleQuotedToken;
+import com.xosmig.swdesignhw.aush.token.PlainTextToken;
 import com.xosmig.swdesignhw.aush.token.Token;
 import org.junit.After;
 import org.junit.Before;
@@ -28,4 +31,13 @@ public abstract class ParserTestBase {
     protected Command parseTokensList(List<Token> tokens) throws Exception {
         return parser.parse(tokens);
     }
+
+    protected PlainTextToken plainText(String text) {
+        return new PlainTextToken(CmdString.parse(text));
+    }
+
+    protected DoubleQuotedToken doubleQuoted(String text) {
+        return new DoubleQuotedToken(CmdString.parse(text));
+    }
+
 }

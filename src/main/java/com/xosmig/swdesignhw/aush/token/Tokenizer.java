@@ -12,38 +12,38 @@ public class Tokenizer {
     }
 
     private static class Helper {
-        private static final Map<Character, Token> SPECIAL;
+        private static final Map<CmdChar, Token> SPECIAL;
+
         static {
-            SPECIAL = new TreeMap<>();
-            SPECIAL.put(';', SemicolonToken.get());
-            SPECIAL.put('|', PipeToken.get());
+            SPECIAL = new HashMap<>();
+            SPECIAL.put(CmdChar.get(';', false), SemicolonToken.get());
+            SPECIAL.put(CmdChar.get('|', false), PipeToken.get());
         }
 
-        private final String text;
+        private final CmdString text;
         private final List<Token> result = new ArrayList<>();
         private final List<Token> concatenated = new ArrayList<>();
-        private final StringBuilder buffer = new StringBuilder();
+        private final CmdStringBuilder buffer = new CmdStringBuilder();
 
         public Helper(String text) {
-            this.text = text;
+            this.text = CmdString.parse(text);
         }
 
         public List<Token> tokenize() throws IllegalArgumentException {
-            for (int idx = 0; idx < text.length();) {
+            for (int idx = 0; idx < text.length(); ) {
                 // can't use idx directly in the closures, since it is not final nor effectively final
                 final int curIdx = idx;
-                idx = tryBackslash(curIdx).orElseGet(() ->
-                        tryQuote(curIdx).orElseGet(() ->
+                idx = tryQuote(curIdx).orElseGet(() ->
                         trySpecial(curIdx).orElseGet(() ->
-                        tryWhitespace(curIdx).orElseGet(() ->
-                        tryPlainText(curIdx)))));
+                                tryWhitespace(curIdx).orElseGet(() ->
+                                        tryPlainText(curIdx))));
             }
             endConcatenatedSequence();
 
             return result;
         }
 
-        private void addChar(char ch) {
+        private void addChar(CmdChar ch) {
             buffer.append(ch);
         }
 
@@ -52,12 +52,12 @@ public class Tokenizer {
         }
 
         private void endPlainTextToken() {
-            if (buffer.length() == 0) {
+            if (buffer.isEmpty()) {
                 return;
             }
 
-            addAtomicToken(new PlainTextToken(buffer.toString()));
-            buffer.delete(0, buffer.length()); // clean the buffer
+            addAtomicToken(new PlainTextToken(buffer.finish()));
+            buffer.clear();
         }
 
         private void endConcatenatedSequence() {
@@ -66,38 +66,23 @@ public class Tokenizer {
             concatenated.clear();
         }
 
-        private Optional<Integer> tryBackslash(int idx) throws IllegalArgumentException {
-            char ch = text.charAt(idx);
-            if (ch == '\\') {
-                if (idx + 1 == text.length()) {
-                    throw new IllegalArgumentException("Unexpected end of line");
-                }
-                addChar(text.charAt(idx + 1));
-                return Optional.of(idx + 2);
-            }
-            return Optional.empty();
-        }
-
-        private Optional<Integer> tryQuote(int idx) throws IllegalArgumentException {
-            char ch = text.charAt(idx);
-            if (ch == '\'' || ch == '\"') {
+        private Optional<Integer> tryQuote(int idx) {
+            CmdChar ch = text.charAt(idx);
+            if (ch.equals(CmdChar.get('\"', false))) {
                 endPlainTextToken();
-                int rightQuote = idx + 1 + text.substring(idx + 1).indexOf(ch);
-                if (rightQuote == -1) {
-                    throw new IllegalArgumentException("Quote without a pair");
+                int rightQuoteRelative = text.substring(idx + 1).indexOf(ch);
+                if (rightQuoteRelative == -1) {
+                    throw new IllegalArgumentException("Double quote without a pair");
                 }
-                if (ch == '\'') {
-                    addAtomicToken(new SingleQuotedToken(text.substring(idx + 1, rightQuote)));
-                } else {
-                    addAtomicToken(new DoubleQuotedToken(text.substring(idx + 1, rightQuote)));
-                }
+                int rightQuote = idx + 1 + rightQuoteRelative;
+                addAtomicToken(new DoubleQuotedToken(text.substring(idx + 1, rightQuote)));
                 return Optional.of(rightQuote + 1);
             }
             return Optional.empty();
         }
 
         private Optional<Integer> trySpecial(int idx) {
-            char ch = text.charAt(idx);
+            CmdChar ch = text.charAt(idx);
             if (SPECIAL.containsKey(ch)) {
                 endConcatenatedSequence();
                 addAtomicToken(SPECIAL.get(ch));
@@ -108,8 +93,8 @@ public class Tokenizer {
         }
 
         private Optional<Integer> tryWhitespace(int idx) {
-            char ch = text.charAt(idx);
-            if (Character.isWhitespace(ch)) {
+            CmdChar ch = text.charAt(idx);
+            if (CmdChar.isWhitespace(ch)) {
                 endConcatenatedSequence();
                 return Optional.of(idx + 1);
             }

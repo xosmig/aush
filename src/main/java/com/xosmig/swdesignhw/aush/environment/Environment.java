@@ -3,7 +3,6 @@ package com.xosmig.swdesignhw.aush.environment;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,12 +51,14 @@ public final class Environment {
     public Path getWorkingDir() { return workingDir; }
 
     public List<Word> expand(Token token) {
-        return token.accept(new ListTokenExpander()).words;
+//        return token.accept(new ListTokenExpander()).words;
+        return null; // TODO
     }
 
     public Environment assign(String name, Token value) {
-        return new Environment(inputStream, outputStream, errorStream, workingDir,
-                varValues.plus(name, value.accept(new StringTokenExpander()).toString()));
+//        return new Environment(inputStream, outputStream, errorStream, workingDir,
+//                varValues.plus(name, value.accept(new StringTokenExpander()).toString()));
+        return null; // TODO
     }
 
     public Environment updateInputStream(InputStream newInputStream) {
@@ -124,88 +125,93 @@ public final class Environment {
         return result.toString();
     }
 
-    private final class ListTokenExpander implements TokenVisitor<ExpansionResult> {
-        @Override
-        public ExpansionResult visit(DoubleQuotedToken token) {
-            return ExpansionResult.singleWord(new Word(expandVariables(token.getContent())));
-        }
-
-        @Override
-        public ExpansionResult visit(SingleQuotedToken token) {
-            return ExpansionResult.singleWord(new Word(token.getContent()));
-        }
-
-        @Override
-        public ExpansionResult visit(PlainTextToken token) {
-            String expandedText = expandVariables(token.getContent());
-            return new ExpansionResult(
-                    Arrays.stream(expandedText.split("\\s+"))
-                            .map(Word::new)
-                            .collect(Collectors.toList()),
-                    Character.isWhitespace(expandedText.charAt(0)),
-                    Character.isWhitespace(expandedText.charAt(expandedText.length() - 1)));
-        }
-
-        @Override
-        public ExpansionResult visit(ConcatenatedToken token) {
-            ExpansionResult left = token.getLeft().accept(this);
-            ExpansionResult right = token.getRight().accept(this);
-
-            List<Word> result = new ArrayList<>();
-            if (!left.rightSeparated && !right.leftSeparated) {
-                // merge the words in the center
-                result.addAll(left.words.subList(0, left.words.size() - 1));
-                result.add(Word.concat(left.words.get(left.words.size() - 1), right.words.get(0)));
-                result.addAll(right.words.subList(1, right.words.size()));
-            } else {
-                result.addAll(left.words.subList(0, left.words.size()));
-                result.addAll(right.words.subList(0, right.words.size()));
-            }
-            return new ExpansionResult(result, left.leftSeparated, right.rightSeparated);
-        }
-
-        @Override
-        public ExpansionResult visit(SemicolonToken token) {
-            return null; // TODO
-        }
-
-        @Override
-        public ExpansionResult visit(PipeToken token) {
-            return null; // TODO
-        }
-    }
-
-    private final class StringTokenExpander implements TokenVisitor<StringBuilder> {
-        @Override
-        public StringBuilder visit(DoubleQuotedToken token) {
-            return new StringBuilder(expandVariables(token.getContent()));
-        }
-
-        @Override
-        public StringBuilder visit(SingleQuotedToken token) {
-            return new StringBuilder(token.getContent());
-        }
-
-        @Override
-        public StringBuilder visit(PlainTextToken token) {
-            return new StringBuilder(expandVariables(token.getContent()));
-        }
-
-        @Override
-        public StringBuilder visit(ConcatenatedToken token) {
-            return token.getLeft().accept(this).append(token.getRight().accept(this));
-        }
-
-        @Override
-        public StringBuilder visit(SemicolonToken token) {
-            return null; // TODO
-        }
-
-        @Override
-        public StringBuilder visit(PipeToken token) {
-            return null; // TODO
-        }
-    }
+//    private final class ListTokenExpander implements TokenVisitor<ExpansionResult> {
+//        @Override
+//        public ExpansionResult visit(DoubleQuotedToken token) {
+//            return ExpansionResult.singleWord(new Word(expandVariables(token.getContent())));
+//        }
+//
+//        @Override
+//        public ExpansionResult visit(SingleQuotedToken token) {
+//            return ExpansionResult.singleWord(new Word(token.getContent()));
+//        }
+//
+//        @Override
+//        public ExpansionResult visit(PlainTextToken token) {
+//            String expandedText = expandVariables(token.getContent());
+//            return new ExpansionResult(
+//                    Arrays.stream(expandedText.split("\\s+"))
+//                            .map(Word::new)
+//                            .collect(Collectors.toList()),
+//                    Character.isWhitespace(expandedText.charAt(0)),
+//                    Character.isWhitespace(expandedText.charAt(expandedText.length() - 1)));
+//        }
+//
+//        @Override
+//        public ExpansionResult visit(ConcatenatedToken token) {
+//            ExpansionResult left = token.getLeft().accept(this);
+//            ExpansionResult right = token.getRight().accept(this);
+//
+//            List<Word> result = new ArrayList<>();
+//            if (!left.rightSeparated && !right.leftSeparated) {
+//                // merge the words in the center
+//                result.addAll(left.words.subList(0, left.words.size() - 1));
+//                result.add(Word.concat(left.words.get(left.words.size() - 1), right.words.get(0)));
+//                result.addAll(right.words.subList(1, right.words.size()));
+//            } else {
+//                result.addAll(left.words.subList(0, left.words.size()));
+//                result.addAll(right.words.subList(0, right.words.size()));
+//            }
+//            return new ExpansionResult(result, left.leftSeparated, right.rightSeparated);
+//        }
+//
+//        @Override
+//        public ExpansionResult visit(SemicolonToken token) {
+//            return null; // TODO
+//        }
+//
+//        @Override
+//        public ExpansionResult visit(PipeToken token) {
+//            return null; // TODO
+//        }
+//    }
+//
+//    private final class StringTokenExpander implements TokenVisitor<StringBuilder> {
+//        @Override
+//        public StringBuilder visit(DoubleQuotedToken token) {
+//            return new StringBuilder(expandVariables(token.getContent()));
+//        }
+//
+//        @Override
+//        public StringBuilder visit(SingleQuotedToken token) {
+//            return new StringBuilder(token.getContent());
+//        }
+//
+//        @Override
+//        public StringBuilder visit(PlainTextToken token) {
+//            return new StringBuilder(expandVariables(token.getContent()));
+//        }
+//
+//        @Override
+//        public StringBuilder visit(ConcatenatedToken token) {
+//            return token.getLeft().accept(this).append(token.getRight().accept(this));
+//        }
+//
+//        @Override
+//        public StringBuilder visit(SemicolonToken token) {
+//            return null; // TODO
+//        }
+//
+//        @Override
+//        public StringBuilder visit(PipeToken token) {
+//            return null; // TODO
+//        }
+//
+//        @Override
+//        public StringBuilder visit(VariableToken token) {
+//            return null; // TODO
+//        }
+//    }
 
     private final static class ExpansionResult {
         public final List<Word> words;

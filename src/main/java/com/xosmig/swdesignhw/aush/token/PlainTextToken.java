@@ -1,9 +1,9 @@
 package com.xosmig.swdesignhw.aush.token;
 
 public final class PlainTextToken implements Token {
-    private final String content;
+    private final CmdString content;
 
-    public PlainTextToken(String content) {
+    public PlainTextToken(CmdString content) {
         this.content = content;
     }
 
@@ -12,13 +12,13 @@ public final class PlainTextToken implements Token {
         return visitor.visit(this);
     }
 
-    public String getContent() {
+    public CmdString getContent() {
         return content;
     }
 
     @Override
     public String backToString() {
-        return content;
+        return content.toString();
     }
 
     @Override
@@ -34,7 +34,6 @@ public final class PlainTextToken implements Token {
         if (!(obj instanceof PlainTextToken)) return false;
 
         final PlainTextToken token = (PlainTextToken) obj;
-
         return content.equals(token.content);
     }
 

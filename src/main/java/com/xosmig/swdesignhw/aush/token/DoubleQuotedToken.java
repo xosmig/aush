@@ -3,9 +3,9 @@ package com.xosmig.swdesignhw.aush.token;
 import java.util.Objects;
 
 public final class DoubleQuotedToken implements Token {
-    private final String content;
+    private final CmdString content;
 
-    public DoubleQuotedToken(String content) {
+    public DoubleQuotedToken(CmdString content) {
         this.content = content;
     }
 
@@ -14,7 +14,7 @@ public final class DoubleQuotedToken implements Token {
         return visitor.visit(this);
     }
 
-    public String getContent() {
+    public CmdString getContent() {
         return content;
     }
 

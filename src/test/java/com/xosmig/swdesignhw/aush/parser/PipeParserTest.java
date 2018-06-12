@@ -3,7 +3,6 @@ package com.xosmig.swdesignhw.aush.parser;
 import com.xosmig.swdesignhw.aush.commands.Command;
 import com.xosmig.swdesignhw.aush.commands.PipeCommand;
 import com.xosmig.swdesignhw.aush.token.PipeToken;
-import com.xosmig.swdesignhw.aush.token.PlainTextToken;
 import com.xosmig.swdesignhw.aush.token.Token;
 import org.junit.Test;
 
@@ -23,7 +22,7 @@ public class PipeParserTest extends ParserTestBase {
     public void testNoPipes() throws Exception {
         final Command mockCommand = mock(Command.class);
         when(mockParser.parse(any())).thenReturn(mockCommand);
-        List<Token> tokens = asList(new PlainTextToken("hello"));
+        List<Token> tokens = asList(plainText("hello"));
         assertEquals(mockCommand, parseTokensList(tokens));
         verify(mockParser, times(1)).parse(tokens);
     }
@@ -34,9 +33,9 @@ public class PipeParserTest extends ParserTestBase {
         final Command mockCommand2 = mock(Command.class);
         final Command mockCommand3 = mock(Command.class);
 
-        Token left = new PlainTextToken("left");
-        Token mid = new PlainTextToken("middle");
-        Token right = new PlainTextToken("right");
+        Token left = plainText("left");
+        Token mid = plainText("middle");
+        Token right = plainText("right");
 
         List<Token> tokens = asList(left, PipeToken.get(), mid, PipeToken.get(), right);
         when(mockParser.parse(asList(left))).thenReturn(mockCommand1);

@@ -1,6 +1,5 @@
 package com.xosmig.swdesignhw.aush.token;
 
-import com.xosmig.swdesignhw.aush.token.*;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -12,15 +11,23 @@ import static org.junit.Assert.*;
 public class TokenizerTest {
     Tokenizer tokenizer = new Tokenizer();
 
+    private PlainTextToken plainText(String text) {
+        return new PlainTextToken(CmdString.parse(text));
+    }
+
+    private DoubleQuotedToken doubleQuoted(String text) {
+        return new DoubleQuotedToken(CmdString.parse(text));
+    }
+
     @Test
     public void testPlainText() {
-        assertEquals(Collections.singletonList(new PlainTextToken("foobar")),
+        assertEquals(Collections.singletonList(plainText("foobar")),
                 tokenizer.tokenize("foobar"));
     }
 
     @Test
     public void testTrailingSpaces() {
-        assertEquals(Collections.singletonList(new PlainTextToken("foobar")),
+        assertEquals(Collections.singletonList(plainText("foobar")),
                 tokenizer.tokenize("  foobar     "));
     }
 
@@ -31,25 +38,19 @@ public class TokenizerTest {
 
     @Test
     public void testSingleSeparator() {
-        assertEquals(Arrays.asList(new PlainTextToken("hello,"), new PlainTextToken("world")),
+        assertEquals(Arrays.asList(plainText("hello,"), plainText("world")),
                 tokenizer.tokenize("hello, world"));
     }
 
     @Test
     public void testMultipleSeparators() {
-        assertEquals(Arrays.asList(new PlainTextToken("hello,"), new PlainTextToken("world")),
+        assertEquals(Arrays.asList(plainText("hello,"), plainText("world")),
                 tokenizer.tokenize("hello,\t  \n\n world"));
     }
 
     @Test
-    public void testSingleQuotedText() {
-        assertEquals(Collections.singletonList(new SingleQuotedToken("hello, world")),
-                tokenizer.tokenize("'hello, world'"));
-    }
-
-    @Test
     public void testDoubleQuotedText() {
-        assertEquals(Collections.singletonList(new DoubleQuotedToken("hello, world")),
+        assertEquals(Collections.singletonList(doubleQuoted("hello, world")),
                 tokenizer.tokenize("\"hello, world\""));
     }
 
@@ -57,23 +58,24 @@ public class TokenizerTest {
     public void testConcatenated() {
         Token expected = new ConcatenatedToken(
                 new ConcatenatedToken(
-                        new PlainTextToken("hello,"),
-                        new SingleQuotedToken(" world")
+                        plainText("hello,"),
+                        doubleQuoted(" world")
                 ),
-                new PlainTextToken("!"));
-        assertEquals(Collections.singletonList(expected), tokenizer.tokenize("hello,' world'!"));
+                plainText("!")
+        );
+        assertEquals(Collections.singletonList(expected), tokenizer.tokenize("hello,\" world\"!"));
     }
 
     @Test
     public void testSemicolonAndPipe() {
-        List<Token> expected = Arrays.asList(new PlainTextToken("foo"), SemicolonToken.get(),
-                new PlainTextToken("bar"), PipeToken.get(), new PlainTextToken("baz"));
+        List<Token> expected = Arrays.asList(plainText("foo"), SemicolonToken.get(),
+                plainText("bar"), PipeToken.get(), plainText("baz"));
         assertEquals(expected, tokenizer.tokenize("foo;bar|baz"));
     }
 
     @Test
-    public void testEscapedSymbols() {
-        assertEquals(Collections.singletonList(new PlainTextToken("  \\foo bar\tbaz\n")),
-                tokenizer.tokenize("\\ \\ \\\\foo\\ \\bar\\\tbaz\\\n"));
+    public void testEscapedDoubleQuote() {
+        assertEquals(Collections.singletonList(doubleQuoted("hello,\\\" world")),
+                tokenizer.tokenize("\"hello,\\\" world\""));
     }
 }
