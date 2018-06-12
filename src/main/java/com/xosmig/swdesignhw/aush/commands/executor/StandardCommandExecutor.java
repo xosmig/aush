@@ -2,7 +2,6 @@ package com.xosmig.swdesignhw.aush.commands.executor;
 
 import com.xosmig.swdesignhw.aush.commands.*;
 import com.xosmig.swdesignhw.aush.environment.Environment;
-import com.xosmig.swdesignhw.aush.environment.Word;
 
 import java.io.*;
 import java.util.List;
@@ -56,8 +55,7 @@ public class StandardCommandExecutor implements CommandExecutor {
     @Override
     public Environment execute(TokenSequenceCommand cmd, Environment env) throws IOException {
         final List<String> words = cmd.getTokens().stream()
-                .flatMap(token -> env.expand(token).stream())
-                .map(Word::getContent)
+                .map(token -> env.expand(token))
                 .collect(Collectors.toList());
         if (words.isEmpty()) {
             return env;

@@ -12,8 +12,8 @@ public final class ConcatenatedToken implements Token {
     }
 
     @Override
-    public <T> T accept(TokenVisitor<T> visitor) {
-        return visitor.visit(this);
+    public void accept(TokenVisitor visitor) {
+        visitor.visit(this);
     }
 
     public Token getLeft() {

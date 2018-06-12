@@ -21,9 +21,9 @@ public final class AssignmentParser implements Parser {
             return nextParser.parse(text);
         }
 
-        Optional<AssignmentCommand> resultOpt;
+        AssignmentSearch search = new AssignmentSearch();
         try {
-            resultOpt = text.get(0).accept(new AssignmentSearch());
+            text.get(0).accept(search);
         } catch (RuntimeException e) {
             if (e.getCause() instanceof ParseErrorException) {
                 throw (ParseErrorException) e.getCause();
@@ -31,28 +31,25 @@ public final class AssignmentParser implements Parser {
             throw e;
         }
 
-        if (!resultOpt.isPresent()) {
+        if (search.result == null) {
             return nextParser.parse(text);
         }
         if (text.size() > 1) {
-            throw new ParseErrorException("Unexpected token after an assignment: `" +
-                    text.get(1).backToString() + "`");
+            throw new ParseErrorException("Unexpected token after an assignment: " +
+                    "`" + text.get(1).backToString() + "`");
         }
 
-        return resultOpt.get();
+        return search.result;
     }
 
-    private static final class AssignmentSearch implements TokenVisitor<Optional<AssignmentCommand>> {
-        @Override
-        public Optional<AssignmentCommand> visit(DoubleQuotedToken token) {
-            return Optional.empty();
-        }
+    private static final class AssignmentSearch implements TokenVisitor {
+        public AssignmentCommand result = null;
 
         @Override
-        public Optional<AssignmentCommand> visit(PlainTextToken token) {
+        public void visit(PlainTextToken token) {
             int idx = token.getContent().indexOf(CmdChar.get('=', false));
             if (idx == -1 || idx == 0) {
-                return Optional.empty();
+                return;
             }
 
             String name = token.getContent().substring(0, idx).toString();
@@ -62,25 +59,29 @@ public final class AssignmentParser implements Parser {
             }
 
             Token value = new PlainTextToken(token.getContent().substring(idx + 1));
-            return Optional.of(new AssignmentCommand(name, value));
+            result = new AssignmentCommand(name, value);
         }
 
         @Override
-        public Optional<AssignmentCommand> visit(ConcatenatedToken token) {
-            return token.getLeft().accept(this).map(cmd -> {
-                return new AssignmentCommand(cmd.getName(),
-                        new ConcatenatedToken(cmd.getValue(), token.getRight()));
-            });
+        public void visit(ConcatenatedToken token) {
+            token.getLeft().accept(this);
+            if (result == null) {
+                return;
+            }
+            Token value = new ConcatenatedToken(result.getValue(), token.getRight());
+            result = new AssignmentCommand(result.getName(), value);
         }
 
         @Override
-        public Optional<AssignmentCommand> visit(SemicolonToken token) {
-            return Optional.empty();
+        public void visit(DoubleQuotedToken token) {
         }
 
         @Override
-        public Optional<AssignmentCommand> visit(PipeToken token) {
-            return Optional.empty();
+        public void visit(SemicolonToken token) {
+        }
+
+        @Override
+        public void visit(PipeToken token) {
         }
     }
 }

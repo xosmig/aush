@@ -2,7 +2,6 @@ package com.xosmig.swdesignhw.aush.commands;
 
 import com.xosmig.swdesignhw.aush.commands.executor.CommandExecutor;
 import com.xosmig.swdesignhw.aush.environment.Environment;
-import com.xosmig.swdesignhw.aush.token.CmdString;
 import com.xosmig.swdesignhw.aush.token.Token;
 
 import java.io.IOException;
@@ -21,9 +20,13 @@ public final class AssignmentCommand implements Command {
         this.value = value;
     }
 
+    public static boolean isValidNameCharacter(char ch) {
+        return Character.isLetter(ch) || Character.isDigit(ch);
+    }
+
     public static boolean isValidName(String name) {
         for (int i = 0; i < name.length(); i++) {
-            if (!Character.isLetter(name.charAt(i))) {
+            if (!isValidNameCharacter(name.charAt(i))) {
                 return false;
             }
         }

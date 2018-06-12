@@ -11,8 +11,8 @@ public final class SemicolonToken implements Token {
     }
 
     @Override
-    public <T> T accept(TokenVisitor<T> visitor) {
-        return visitor.visit(this);
+    public void accept(TokenVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
