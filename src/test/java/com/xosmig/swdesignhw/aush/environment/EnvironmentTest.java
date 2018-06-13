@@ -13,8 +13,8 @@ import static org.junit.Assert.*;
 public class EnvironmentTest extends TestBase {
 
     private Environment env = Environment.builder()
-            .setInput(new StreamInput(new NullInputStream(0)))
-            .setOutput(new StreamOutput(new NullOutputStream()))
+            .setInput(StreamInput.get(new NullInputStream(0)))
+            .setOutput(StreamOutput.get(new NullOutputStream()))
             .setVarValues(HashTreePMap.singleton("myVar", "myValue"))
             .finish();
 
