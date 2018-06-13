@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/xosmig/aush.svg?branch=master)](https://travis-ci.org/xosmig/aush)
+
 # aush
 Software design homework.
 
