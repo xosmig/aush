@@ -25,7 +25,7 @@ public class EnvironmentTest extends TestBase {
 
     @Test
     public void testExpandConcatenatedTokenWithoutVariables() {
-        Token token = new ConcatenatedToken(plainText("hello"), doubleQuoted(", world"));
+        Token token = ConcatenatedToken.concat(plainText("hello"), doubleQuoted(", world"));
         assertEquals("hello, world", env.expand(token));
     }
 
@@ -36,7 +36,7 @@ public class EnvironmentTest extends TestBase {
 
     @Test
     public void testExpandConcatenatedTokenWithVariables() {
-        Token token = new ConcatenatedToken(plainText("hello"), doubleQuoted(", $myVar how r u?"));
+        Token token = ConcatenatedToken.concat(plainText("hello"), doubleQuoted(", $myVar how r u?"));
         assertEquals("hello, myValue how r u?", env.expand(token));
     }
 }

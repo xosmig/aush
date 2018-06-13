@@ -1,9 +1,23 @@
 package com.xosmig.swdesignhw.aush.token;
 
-public final class PlainTextToken implements Token {
+/**
+ * Represent a substring of a command line without non-escaped whitespaces.
+ */
+public final class PlainTextToken implements ConcatenatableToken {
     private final CmdString content;
 
+    /**
+     * Constructs a new {@code PlainTextToken} with the given content.
+     *
+     * @param content content of the new token.
+     * @throws IllegalArgumentException if the content contains non-escaped whitespaces.
+     */
     public PlainTextToken(CmdString content) {
+        for (int i = 0; i < content.length(); i++) {
+            if (CmdChar.isNonEscapedWhitespace(content.charAt(i))) {
+                throw new IllegalArgumentException("PlainTextToken cannot contain non-escaped whitespaces");
+            }
+        }
         this.content = content;
     }
 
@@ -12,13 +26,13 @@ public final class PlainTextToken implements Token {
         visitor.visit(this);
     }
 
+    /**
+     * Returns the content of the token. Cannot contain non-escaped whitespaces.
+     *
+     * @return the content of the token.
+     */
     public CmdString getContent() {
         return content;
-    }
-
-    @Override
-    public String backToString() {
-        return content.toString();
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.xosmig.swdesignhw.aush.commands.AssignmentCommand;
 import com.xosmig.swdesignhw.aush.commands.Command;
 import com.xosmig.swdesignhw.aush.token.ConcatenatedToken;
 import com.xosmig.swdesignhw.aush.token.Token;
+import com.xosmig.swdesignhw.aush.token.Tokenizer;
 import org.junit.Test;
 
 import java.util.List;
@@ -36,17 +37,17 @@ public class AssignParserTest extends ParserTestBase {
 
     @Test
     public void testQuotedAssignment() throws Exception {
-        Command result = parseTokens(new ConcatenatedToken(plainText("myVar="), doubleQuoted("hello")));
+        Command result = parseTokens(ConcatenatedToken.concat(plainText("myVar="), doubleQuoted("hello")));
         assertTrue(result instanceof AssignmentCommand);
         AssignmentCommand assignment = (AssignmentCommand) result;
-        assertEquals("\"hello\"", assignment.getValueToken().backToString());
+        assertEquals("\"hello\"", Tokenizer.detokenize(assignment.getValueToken()));
     }
 
     @Test
     public void testConcatenatedAssignment() throws Exception {
-        Command result = parseTokens(new ConcatenatedToken(plainText("myVar=hello,"), doubleQuoted(" world")));
+        Command result = parseTokens(ConcatenatedToken.concat(plainText("myVar=hello,"), doubleQuoted(" world")));
         assertTrue(result instanceof AssignmentCommand);
         AssignmentCommand assignment = (AssignmentCommand) result;
-        assertEquals("hello,\" world\"", assignment.getValueToken().backToString());
+        assertEquals("hello,\" world\"", Tokenizer.detokenize(assignment.getValueToken()));
     }
 }

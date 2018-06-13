@@ -2,13 +2,36 @@ package com.xosmig.swdesignhw.aush.token;
 
 import java.util.Objects;
 
-public final class ConcatenatedToken implements Token {
-    private final Token left;
-    private final Token right;
+/**
+ * Represents a sequence of tokens concatenated to a single token.
+ *
+ * Note that it's a common technique to use another instance of <code>ConcatenatedToken</code>
+ * as one (preferably, left) or both sub-tokens.
+ */
+public final class ConcatenatedToken implements ConcatenatableToken {
 
-    public ConcatenatedToken(Token left, Token right) {
+    private final ConcatenatableToken left;
+    private final ConcatenatableToken right;
+
+    private ConcatenatedToken(ConcatenatableToken left, ConcatenatableToken right) {
         this.left = left;
         this.right = right;
+    }
+
+    /**
+     * Returns a token, which is semantically equal to the two given
+     * tokens concatenated with each other.
+     * I.e. a token which will be always expanded by the {@code Environment}
+     * class to the same string as the two given tokens concatenated to each other.
+     *
+     * @param left the left part of the resulting token.
+     * @param right the right part of the resulting token.
+     * @return the result of concatenating.
+     * @see com.xosmig.swdesignhw.aush.environment.Environment
+     */
+    public static ConcatenatableToken concat(ConcatenatableToken left, ConcatenatableToken right) {
+        // it's possible avoid concatenating empty tokens here or to concatenate plain text tokens.
+        return new ConcatenatedToken(left, right);
     }
 
     @Override
@@ -16,17 +39,22 @@ public final class ConcatenatedToken implements Token {
         visitor.visit(this);
     }
 
-    public Token getLeft() {
+    /**
+     * Returns the left part of the token, which can be another {@code ConcatenatedToken}.
+     *
+     * @return the left part of the token.
+     */
+    public ConcatenatableToken getLeft() {
         return left;
     }
 
-    public Token getRight() {
+    /**
+     * Returns the right part of the token, which can be another {@code ConcatenatedToken}.
+     *
+     * @return the right part of the token.
+     */
+    public ConcatenatableToken getRight() {
         return right;
-    }
-
-    @Override
-    public String backToString() {
-        return getLeft().backToString() + getRight().backToString();
     }
 
     @Override

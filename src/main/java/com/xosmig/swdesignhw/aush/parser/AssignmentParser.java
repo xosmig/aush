@@ -34,7 +34,7 @@ public final class AssignmentParser implements Parser {
         }
         if (text.size() > 1) {
             throw new ParseErrorException("Unexpected token after an assignment: " +
-                    "`" + text.get(1).backToString() + "`");
+                    "`" + Tokenizer.detokenize(text.get(1)) + "`");
         }
 
         return search.result;
@@ -66,7 +66,7 @@ public final class AssignmentParser implements Parser {
             if (result == null) {
                 return;
             }
-            Token value = new ConcatenatedToken(result.getValueToken(), token.getRight());
+            Token value = ConcatenatedToken.concat((ConcatenatableToken) result.getValueToken(), token.getRight());
             result = new AssignmentCommand(result.getName(), value);
         }
 

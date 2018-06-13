@@ -2,9 +2,20 @@ package com.xosmig.swdesignhw.aush.token;
 
 import java.util.Objects;
 
-public final class DoubleQuotedToken implements Token {
+/**
+ * Represent a substring of a command line, enclosed with double quotes.
+ * The content of the token can contain non-escaped whitespaces
+ * as opposite to {@code PlainTextToken}
+ */
+public final class DoubleQuotedToken implements ConcatenatableToken {
+
     private final CmdString content;
 
+    /**
+     * Constructs a new {@code DoubleQuotedToken} with the given content.
+     *
+     * @param content content of the new token.
+     */
     public DoubleQuotedToken(CmdString content) {
         this.content = content;
     }
@@ -14,13 +25,13 @@ public final class DoubleQuotedToken implements Token {
         visitor.visit(this);
     }
 
+    /**
+     * Returns the content of the token. The content might contain non-escaped whitespaces.
+     *
+     * @return the content of the token.
+     */
     public CmdString getContent() {
         return content;
-    }
-
-    @Override
-    public String backToString() {
-        return "\"" + content + "\"";
     }
 
     @Override
