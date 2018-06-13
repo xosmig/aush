@@ -6,10 +6,24 @@ import com.xosmig.swdesignhw.aush.environment.Environment;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * Represents multiple commands, which are supposed to be run one after another.
+ * Exact semantic depends on the command executor.
+ * See <coode>StandardCommandExecutor</coode> for information about the default semantic.
+ *
+ * Note that it's a common technique to use another instance of <code>MultipleCommand</code>
+ * as one (preferably, left) or both sub-commands.
+ */
 public class MultipleCommands implements Command {
     private final Command left;
     private final Command right;
 
+    /**
+     * Creates a new command, which consists of two sub-commands.
+     *
+     * @param left the command to be executed first.
+     * @param right the command to be executed second.
+     */
     public MultipleCommands(Command left, Command right) {
         this.left = left;
         this.right = right;
@@ -18,13 +32,23 @@ public class MultipleCommands implements Command {
     @Override
     public Environment accept(Environment environment, CommandExecutor executor)
             throws IOException, InterruptedException {
-        return executor.execute(this, environment);
+        return executor.execute(environment, this);
     }
 
+    /**
+     * Returns the command to be executed first.
+     *
+     * @return the command to be executed first.
+     */
     public Command getLeft() {
         return left;
     }
 
+    /**
+     * Returns the command to be executed second.
+     *
+     * @return the command to be executed second.
+     */
     public Command getRight() {
         return right;
     }

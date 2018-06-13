@@ -39,7 +39,7 @@ public class AssignParserTest extends ParserTestBase {
         Command result = parseTokens(new ConcatenatedToken(plainText("myVar="), doubleQuoted("hello")));
         assertTrue(result instanceof AssignmentCommand);
         AssignmentCommand assignment = (AssignmentCommand) result;
-        assertEquals("\"hello\"", assignment.getValue().backToString());
+        assertEquals("\"hello\"", assignment.getValueToken().backToString());
     }
 
     @Test
@@ -47,6 +47,6 @@ public class AssignParserTest extends ParserTestBase {
         Command result = parseTokens(new ConcatenatedToken(plainText("myVar=hello,"), doubleQuoted(" world")));
         assertTrue(result instanceof AssignmentCommand);
         AssignmentCommand assignment = (AssignmentCommand) result;
-        assertEquals("hello,\" world\"", assignment.getValue().backToString());
+        assertEquals("hello,\" world\"", assignment.getValueToken().backToString());
     }
 }

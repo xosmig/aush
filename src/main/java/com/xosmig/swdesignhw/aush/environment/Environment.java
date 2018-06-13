@@ -258,7 +258,7 @@ public final class Environment {
         }
 
         /**
-         * Assign to the variable <code>name</code> value <code>value</code>.
+         * Assigns to the variable <code>name</code> value <code>value</code>.
          * No need to explicitly create a variable, it will be created at the moment of the first
          * assignment. If a variable with this value already existed, it will be overwritten.
          *

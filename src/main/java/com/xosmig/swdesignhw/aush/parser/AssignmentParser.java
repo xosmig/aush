@@ -66,7 +66,7 @@ public final class AssignmentParser implements Parser {
             if (result == null) {
                 return;
             }
-            Token value = new ConcatenatedToken(result.getValue(), token.getRight());
+            Token value = new ConcatenatedToken(result.getValueToken(), token.getRight());
             result = new AssignmentCommand(result.getName(), value);
         }
 
