@@ -15,8 +15,9 @@ public class TokenSequenceCommand implements Command {
     }
 
     @Override
-    public Environment execute(CommandExecutor executor, Environment env) throws IOException {
-        return executor.execute(this, env);
+    public Environment accept(Environment environment, CommandExecutor executor)
+            throws IOException, InterruptedException {
+        return executor.execute(this, environment);
     }
 
     public List<Token> getTokens() {

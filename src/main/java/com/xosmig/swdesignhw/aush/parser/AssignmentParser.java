@@ -2,11 +2,9 @@ package com.xosmig.swdesignhw.aush.parser;
 
 import com.xosmig.swdesignhw.aush.commands.AssignmentCommand;
 import com.xosmig.swdesignhw.aush.commands.Command;
-import com.xosmig.swdesignhw.aush.commands.LocalAssignmentCommand;
 import com.xosmig.swdesignhw.aush.token.*;
 
 import java.util.List;
-import java.util.Optional;
 
 public final class AssignmentParser implements Parser {
     private final Parser nextParser;

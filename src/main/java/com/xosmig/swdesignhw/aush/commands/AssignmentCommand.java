@@ -34,7 +34,8 @@ public final class AssignmentCommand implements Command {
     }
 
     @Override
-    public Environment execute(CommandExecutor executor, Environment environment) throws IOException {
+    public Environment accept(Environment environment, CommandExecutor executor)
+            throws IOException, InterruptedException {
         return executor.execute(this, environment);
     }
 

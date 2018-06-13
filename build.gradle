@@ -19,3 +19,16 @@ dependencies {
 }
 
 mainClassName = "com.xosmig.swdesignhw.aush.Main"
+
+run{
+    standardInput = System.in
+    standardOutput = System.out
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': mainClassName
+        )
+    }
+}

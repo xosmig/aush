@@ -1,8 +1,7 @@
 package com.xosmig.swdesignhw.aush.environment;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import com.xosmig.swdesignhw.aush.commands.AssignmentCommand;
@@ -12,40 +11,54 @@ import org.pcollections.PMap;
 
 
 public final class Environment {
-    private final InputStream inputStream;
-    private final OutputStream outputStream;
-    private final OutputStream errorStream;
+    private final Input input;
+    private final Output output;
     private final Path workingDir;
     private final PMap<String, String> varValues;
+    private final int lastExitCode;
+    private final boolean shouldExit;
 
-    public Environment(InputStream inputStream, OutputStream outputStream,
-                       OutputStream errorStream, Path workingDir) {
-        this(inputStream, outputStream, errorStream, workingDir, HashTreePMap.empty());
-    }
-
-    public Environment(InputStream inputStream, OutputStream outputStream,
-                        OutputStream errorStream, Path workingDir,
-                        PMap<String, String> varValues) {
-        this.inputStream = inputStream;
-        this.outputStream = outputStream;
-        this.errorStream = errorStream;
-        this.workingDir = workingDir;
+    private Environment(Input input, Output output, Path workingDir,
+                        PMap<String, String> varValues, int lastExitCode, boolean shouldExit) {
+        this.input = input;
+        this.output = output;
+        this.workingDir = workingDir.toAbsolutePath();
         this.varValues = varValues;
+        this.lastExitCode = lastExitCode;
+        this.shouldExit = shouldExit;
     }
 
-    public InputStream getInputStream() {
-        return inputStream;
+    public static Environment empty() {
+        return new Environment(Inherit.input(), Inherit.output(), Paths.get(""), HashTreePMap.empty(), 0, false);
     }
 
-    public OutputStream getOutputStream() {
-        return outputStream;
+    public Builder update() {
+        return new Builder(this);
     }
 
-    public OutputStream getErrorStream() {
-        return errorStream;
+    public static Builder builder() {
+        return empty().update();
     }
 
-    public Path getWorkingDir() { return workingDir; }
+    public Input getInput() {
+        return input;
+    }
+
+    public Output getOutput() {
+        return output;
+    }
+
+    public Path getWorkingDir() {
+        return workingDir;
+    }
+
+    public int getLastExitCode() {
+        return lastExitCode;
+    }
+
+    public boolean shouldExit() {
+        return shouldExit;
+    }
 
     public String expand(Token token) {
         TokenExpander expander = new TokenExpander();
@@ -54,29 +67,31 @@ public final class Environment {
     }
 
     public Environment assign(String name, Token value) {
-        return new Environment(inputStream, outputStream, errorStream, workingDir,
-                varValues.plus(name, expand(value)));
+        return update().setVarValues(varValues.plus(name, expand(value))).finish();
     }
 
-    public Environment updateInputStream(InputStream newInputStream) {
-        return new Environment(newInputStream, outputStream, errorStream, workingDir, varValues);
+    public Environment updateInput(Input newInput) {
+        return update().setInput(newInput).finish();
     }
 
-    public Environment updateOutputStream(OutputStream newOutputStream) {
-        return new Environment(inputStream, newOutputStream, errorStream, workingDir, varValues);
-    }
-
-    public Environment updateErrorStream(OutputStream newErrorStream) {
-        return new Environment(inputStream, outputStream, newErrorStream, workingDir, varValues);
+    public Environment updateOutput(Output newOutput) {
+        return update().setOutput(newOutput).finish();
     }
 
     public Environment updateVars(Environment other) {
-        return new Environment(inputStream, outputStream, errorStream, workingDir, other.varValues);
+        return update().setVarValues(other.varValues).finish();
     }
 
     public Environment changeWorkingDir(Path path) {
-        return new Environment(inputStream, outputStream, errorStream, workingDir.resolve(path),
-                varValues);
+        return update().setWorkingDir(workingDir.resolve(path)).finish();
+    }
+
+    public Environment setLastExitCode(int exitCode) {
+        return update().setLastExitCode(exitCode).finish();
+    }
+
+    public Environment shouldExit(boolean value) {
+        return update().shouldExit(value).finish();
     }
 
     private Optional<String> parseVarName(CmdString str) {
@@ -94,7 +109,7 @@ public final class Environment {
     private String expandVariables(CmdString text) {
         final StringBuilder result = new StringBuilder();
 
-        for (int idx = 0; idx < text.length();) {
+        for (int idx = 0; idx < text.length(); ) {
             CmdChar ch = text.charAt(idx);
 
             if (!ch.equals(CmdChar.get('$', false))) {
@@ -146,6 +161,57 @@ public final class Environment {
         @Override
         public void visit(PipeToken token) {
             throw new IllegalArgumentException("Unexpected pipe");
+        }
+    }
+
+    public static class Builder {
+        public Input input;
+        public Output output;
+        public Path workingDir;
+        public PMap<String, String> varValues;
+        public int lastExitCode;
+        public boolean shouldExit;
+
+        public Builder(Environment source) {
+            this.input = source.input;
+            this.output = source.output;
+            this.workingDir = source.workingDir;
+            this.varValues = source.varValues;
+            this.lastExitCode = source.lastExitCode;
+        }
+
+        public Environment finish() {
+            return new Environment(input, output, workingDir, varValues, lastExitCode, shouldExit);
+        }
+
+        public Builder setInput(Input input) {
+            this.input = input;
+            return this;
+        }
+
+        public Builder setOutput(Output output) {
+            this.output = output;
+            return this;
+        }
+
+        public Builder setWorkingDir(Path workingDir) {
+            this.workingDir = workingDir;
+            return this;
+        }
+
+        public Builder setVarValues(PMap<String, String> varValues) {
+            this.varValues = varValues;
+            return this;
+        }
+
+        public Builder setLastExitCode(int lastExitCode) {
+            this.lastExitCode = lastExitCode;
+            return this;
+        }
+
+        public Builder shouldExit(boolean value) {
+            this.shouldExit = value;
+            return this;
         }
     }
 }

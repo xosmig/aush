@@ -3,24 +3,20 @@ package com.xosmig.swdesignhw.aush;
 import com.xosmig.swdesignhw.aush.commands.Command;
 import com.xosmig.swdesignhw.aush.commands.executor.CommandExecutor;
 import com.xosmig.swdesignhw.aush.commands.executor.StandardCommandExecutor;
-import com.xosmig.swdesignhw.aush.environment.Environment;
-import com.xosmig.swdesignhw.aush.parser.ParseErrorException;
+import com.xosmig.swdesignhw.aush.environment.*;
 import com.xosmig.swdesignhw.aush.parser.Parser;
 import com.xosmig.swdesignhw.aush.parser.StandardFullParser;
 import com.xosmig.swdesignhw.aush.token.Tokenizer;
 
-import java.io.*;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.logging.Logger;
+
 
 public class TextUserInterface {
-    private final static Logger LOGGER = Logger.getLogger(TextUserInterface.class.getName());
-
     private final InputStream inputStream;
     private final PrintStream outputStream;
-    private final PrintStream errorStream;
-    private boolean stopped = false;
 
     // For dependency injection
     public Tokenizer tokenizer = new Tokenizer();
@@ -28,15 +24,16 @@ public class TextUserInterface {
     public CommandExecutor executor = new StandardCommandExecutor();
     public Environment environment;
 
-    public TextUserInterface(InputStream inputStream, PrintStream outputStream,
-                             PrintStream errorStream) {
+    public TextUserInterface(InputStream inputStream, PrintStream outputStream) {
         this.inputStream = inputStream;
         this.outputStream = outputStream;
-        this.errorStream = errorStream;
-        this.environment = new Environment(inputStream, outputStream, errorStream, Paths.get(""));
+        this.environment = Environment.builder()
+                .setInput(StreamInput.get(inputStream))
+                .setOutput(StreamOutput.get(outputStream))
+                .finish();
     }
 
-    void run() {
+    void run() throws InterruptedException {
         final Scanner scanner = new Scanner(inputStream);
         final Tokenizer tokenizer = this.tokenizer;
         final Parser parser = this.parser;
@@ -46,19 +43,22 @@ public class TextUserInterface {
         while (!Thread.currentThread().isInterrupted()) {
             outputStream.print("> ");
             outputStream.flush();
-            String cmdLine = scanner.nextLine();
-            LOGGER.fine(() -> "Received a command: `" + cmdLine + "`");
-            Command command;
+            String cmdLine;
             try {
-                command = parser.parse(tokenizer.tokenize(cmdLine));
-            } catch (ParseErrorException | IllegalArgumentException e) {
-                errorStream.println(e);
-                continue;
+                cmdLine = scanner.nextLine();
+            } catch (NoSuchElementException e) {
+                return;
             }
+
             try {
-                environment = command.execute(executor, environment);
-            } catch (IOException e) {
-                errorStream.println(e);
+                Command command = parser.parse(tokenizer.tokenize(cmdLine));
+                environment = command.accept(environment, executor);
+            } catch (Exception e) {
+                outputStream.println(e.getMessage());
+            }
+
+            if (environment.shouldExit()) {
+                return;
             }
         }
     }

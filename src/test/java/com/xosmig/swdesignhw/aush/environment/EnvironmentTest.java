@@ -8,14 +8,15 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Test;
 import org.pcollections.HashTreePMap;
 
-import java.nio.file.Paths;
-
 import static org.junit.Assert.*;
 
 public class EnvironmentTest extends TestBase {
 
-    private Environment env = new Environment(new NullInputStream(0), new NullOutputStream(),
-            new NullOutputStream(), Paths.get(""), HashTreePMap.singleton("myVar", "myValue"));
+    private Environment env = Environment.builder()
+            .setInput(new StreamInput(new NullInputStream(0)))
+            .setOutput(new StreamOutput(new NullOutputStream()))
+            .setVarValues(HashTreePMap.singleton("myVar", "myValue"))
+            .finish();
 
     @Test
     public void testExpandPlainTextWithoutVariables() {

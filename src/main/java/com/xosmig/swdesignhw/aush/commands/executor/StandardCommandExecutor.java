@@ -2,22 +2,23 @@ package com.xosmig.swdesignhw.aush.commands.executor;
 
 import com.xosmig.swdesignhw.aush.commands.*;
 import com.xosmig.swdesignhw.aush.environment.Environment;
+import com.xosmig.swdesignhw.aush.environment.Pipe;
 
 import java.io.*;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class StandardCommandExecutor implements CommandExecutor {
     static final Map<String, Builtin> BUILTINS;
 
     static {
-        BUILTINS = new TreeMap<>();
+        BUILTINS = new HashMap<>();
         BUILTINS.put("pwd", (Environment env, List<String> args) -> {
-            new PrintStream(env.getOutputStream()).println(env.getWorkingDir().toAbsolutePath());
-            env.getOutputStream().flush();
+            env.getOutput().println(env.getWorkingDir().toAbsolutePath());
             return env;
+        });
+        BUILTINS.put("exit", (Environment env, List<String> args) -> {
+            return env.shouldExit(true);
         });
     }
 
@@ -27,51 +28,68 @@ public class StandardCommandExecutor implements CommandExecutor {
     }
 
     @Override
-    public Environment execute(MultipleCommands cmd, Environment env) throws IOException {
-        env = env.updateVars(cmd.getLeft().execute(this, env));
-        return env.updateVars(cmd.getRight().execute(this, env));
+    public Environment execute(MultipleCommands cmd, Environment env)
+            throws IOException, InterruptedException {
+        env = env.updateVars(cmd.getLeft().accept(env, this));
+        return env.updateVars(cmd.getRight().accept(env, this));
     }
 
     @Override
-    public Environment execute(PipeCommand cmd, Environment env) throws IOException {
-        // this approach probably has large overhead, but who cares
-        PipedInputStream ins = new PipedInputStream();
-        PipedOutputStream outs = new PipedOutputStream();
-
-        try {
-            ins.connect(outs);
-        } catch (IOException e) {
-            // should be unreachable
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        cmd.getLeft().execute(this, env.updateOutputStream(outs));
-        cmd.getRight().execute(this, env.updateInputStream(ins));
-
+    public Environment execute(PipeCommand cmd, Environment env) throws IOException, InterruptedException {
+        Pipe pipe = Pipe.get();
+        // TODO: run in separate threads
+        cmd.getLeft().accept(env.updateOutput(pipe.getOutput()), this);
+        cmd.getRight().accept(env.updateInput(pipe.getInput()), this);
         return env;
     }
 
     @Override
-    public Environment execute(TokenSequenceCommand cmd, Environment env) throws IOException {
-        final List<String> words = cmd.getTokens().stream()
-                .map(token -> env.expand(token))
-                .collect(Collectors.toList());
-        if (words.isEmpty()) {
+    public Environment execute(TokenSequenceCommand cmd, Environment env)
+            throws IOException, InterruptedException {
+        final List<String> words = cmd.getTokens().stream().map(env::expand).collect(Collectors.toList());
+        return executeProgram(env, words);
+    }
+
+    public Environment executeProgram(Environment env, List<String> command)
+            throws IOException, InterruptedException {
+        if (command.isEmpty()) {
             return env;
         }
+        final String name = command.get(0);
+        if (BUILTINS.containsKey(name)) {
+            return BUILTINS.get(name).execute(env, command.subList(1, command.size()));
+        }
 
-        return executeSimpleCommand(env, words.get(0), words.subList(1, words.size()));
-    }
+        final Process process = new ProcessBuilder(command)
+                .directory(env.getWorkingDir().toFile())
+                .redirectErrorStream(true) // the error stream is merged with the output stream
+                .redirectInput(env.getInput().getRedirect())
+                .redirectOutput(env.getOutput().getRedirect())
+                .start();
 
-    @Override
-    public Environment execute(LocalAssignmentCommand cmd, Environment env) throws IOException {
-        // FIXME: not local
-        return env.updateVars(cmd.getCmd().execute(this,
-                env.assign(cmd.getAssignment().getName(), cmd.getAssignment().getValue())));
-    }
+        final Thread processOutputReader = new Thread(() -> {
+            try {
+                env.getOutput().doRedirection(process.getInputStream());
+            } catch (Exception e) {
+                // oops
+            }
+        });
+        processOutputReader.start();
 
-    public Environment executeSimpleCommand(Environment env, String name, List<String> args) throws IOException {
-        return BUILTINS.getOrDefault(name, null/*TODO*/).execute(env, args);
+        final Thread processInputWriter = new Thread(() -> {
+            try {
+                env.getInput().doRedirection(process.getOutputStream());
+            } catch (Exception e) {
+                // oops
+            }
+        });
+        processInputWriter.start();
+
+        int exitCode = process.waitFor();
+        processInputWriter.interrupt();
+        processInputWriter.join();
+        processOutputReader.join();
+
+        return env.setLastExitCode(exitCode);
     }
 }
