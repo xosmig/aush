@@ -11,8 +11,12 @@ import java.io.PrintStream;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-
+/**
+ * Text-based user interface, similar to bash with a prompt and
+ * Read-Execute-Print-Loop (REPL) architecture.
+ */
 public class TextUserInterface {
+
     private final InputStream inputStream;
     private final PrintStream outputStream;
 
@@ -21,15 +25,30 @@ public class TextUserInterface {
     public TextCommandCompiler compiler = new BashLikeCommandCompiler();
     public Environment environment;
 
-    public TextUserInterface(InputStream inputStream, PrintStream outputStream) {
-        this.inputStream = inputStream;
-        this.outputStream = outputStream;
+    /**
+     * Creates a new instance of {@code TextUserInterface} which reads the input from
+     * {@code input} and prints the output to {@code output}.
+     * It's advised for {@code input} and {@code output} to refer to the same terminal.
+     *
+     * @param input the input stream.
+     * @param output the output stream.
+     */
+    public TextUserInterface(InputStream input, PrintStream output) {
+        this.inputStream = input;
+        this.outputStream = output;
         this.environment = Environment.builder()
-                .setInput(StreamInput.get(inputStream))
-                .setOutput(StreamOutput.get(outputStream))
+                .setInput(StreamInput.get(input))
+                .setOutput(StreamOutput.get(output))
                 .finish();
     }
 
+    /**
+     * Runs potentially infinite Read-Execute-Print-Loop (REPL).
+     * Stops normally when encounters the end of input or when {@code exit} command is used.
+     * It's not guaranteed to be safe to run the same instance multiple times.
+     *
+     * @throws InterruptedException if the thread is interrupted.
+     */
     public void run() throws InterruptedException {
         final Scanner scanner = new Scanner(inputStream);
         Environment environment = this.environment;

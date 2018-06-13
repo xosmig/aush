@@ -7,8 +7,12 @@ import com.xosmig.swdesignhw.aush.parser.BashLikeFullParser;
 import com.xosmig.swdesignhw.aush.token.Tokenizer;
 
 
+/**
+ * Compiles commands in a way similar to bash.
+ */
 public class BashLikeCommandCompiler implements TextCommandCompiler {
-    public Parser parser = new BashLikeFullParser();
+
+    private Parser parser = new BashLikeFullParser();
 
     @Override
     public Command compile(String text) throws ParseErrorException {
