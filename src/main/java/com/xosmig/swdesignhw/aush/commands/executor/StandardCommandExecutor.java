@@ -15,32 +15,37 @@ public class StandardCommandExecutor implements CommandExecutor {
         BUILTINS = new HashMap<>();
         BUILTINS.put("pwd", (Environment env, List<String> args) -> {
             env.getOutput().println(env.getWorkingDir().toAbsolutePath());
-            return env;
+            return env.update().setLastExitCode(0).finish();
         });
         BUILTINS.put("exit", (Environment env, List<String> args) -> {
-            return env.shouldExit(true);
+            return env.update().shouldExit(true).setLastExitCode(0).finish();
         });
     }
 
     @Override
     public Environment execute(AssignmentCommand cmd, Environment env) {
-        return env.assign(cmd.getName(), cmd.getValue());
+        String value = env.expand(cmd.getValue());
+        return env.update().assign(cmd.getName(), value).setLastExitCode(0).finish();
     }
 
     @Override
     public Environment execute(MultipleCommands cmd, Environment env)
             throws IOException, InterruptedException {
-        env = env.updateVars(cmd.getLeft().accept(env, this));
-        return env.updateVars(cmd.getRight().accept(env, this));
+        env = cmd.getLeft().accept(env, this);
+        env = cmd.getRight().accept(env, this);
+        return env;
     }
 
     @Override
     public Environment execute(PipeCommand cmd, Environment env) throws IOException, InterruptedException {
-        Pipe pipe = Pipe.get();
+        final Pipe pipe = Pipe.get();
+
         // TODO: run in separate threads
-        cmd.getLeft().accept(env.updateOutput(pipe.getOutput()), this);
-        cmd.getRight().accept(env.updateInput(pipe.getInput()), this);
-        return env;
+        cmd.getLeft().accept(env.update().setOutput(pipe.getOutput()).finish(), this);
+        final Environment envRight =
+                cmd.getRight().accept(env.update().setInput(pipe.getInput()).finish(), this);
+
+        return env.update().setLastExitCode(envRight.getLastExitCode()).finish();
     }
 
     @Override
@@ -90,6 +95,6 @@ public class StandardCommandExecutor implements CommandExecutor {
         processInputWriter.join();
         processOutputReader.join();
 
-        return env.setLastExitCode(exitCode);
+        return env.update().setLastExitCode(exitCode).finish();
     }
 }
