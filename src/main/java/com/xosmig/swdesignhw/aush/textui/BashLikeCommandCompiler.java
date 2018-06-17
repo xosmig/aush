@@ -10,7 +10,14 @@ import com.xosmig.swdesignhw.aush.token.Tokenizer;
 /**
  * Compiles commands in a way similar to bash.
  */
-public class BashLikeCommandCompiler implements TextCommandCompiler {
+public final class BashLikeCommandCompiler implements TextCommandCompiler {
+
+    private BashLikeCommandCompiler() {
+    }
+
+    public static BashLikeCommandCompiler get() {
+        return new BashLikeCommandCompiler();
+    }
 
     private Parser parser = new BashLikeFullParser();
 

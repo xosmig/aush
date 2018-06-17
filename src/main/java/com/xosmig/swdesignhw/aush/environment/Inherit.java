@@ -1,8 +1,8 @@
 package com.xosmig.swdesignhw.aush.environment;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 
 public final class Inherit {
     private Inherit() {
@@ -28,6 +28,11 @@ public final class Inherit {
         @Override
         public void doRedirection(OutputStream processInput) {
         }
+
+        @Override
+        public InputStream inputStream() {
+            return System.in;
+        }
     }
 
     private static class InheritOutput implements Output {
@@ -41,8 +46,8 @@ public final class Inherit {
         }
 
         @Override
-        public void println(Object obj) {
-            System.out.println(obj);
+        public PrintStream printStream() {
+            return System.out;
         }
     }
 }

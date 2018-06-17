@@ -21,8 +21,8 @@ public class TextUserInterface {
     private final PrintStream outputStream;
 
     // For dependency injection
-    public CommandExecutor executor = new StandardCommandExecutor();
-    public TextCommandCompiler compiler = new BashLikeCommandCompiler();
+    public CommandExecutor executor = StandardCommandExecutor.get();
+    public TextCommandCompiler compiler = BashLikeCommandCompiler.get();
     public Environment environment;
 
     /**

@@ -1,5 +1,8 @@
 package com.xosmig.swdesignhw.aush.environment;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -80,6 +83,20 @@ public final class Environment {
      */
     public Output getOutput() {
         return output;
+    }
+
+    /**
+     * Same as {@code getInput().inputStream()}
+     */
+    public InputStream inputStream() {
+        return getInput().inputStream();
+    }
+
+    /**
+     * Same as get {@code getOutput().printStream()}
+     */
+    public PrintStream printStream() {
+        return getOutput().printStream();
     }
 
     /**

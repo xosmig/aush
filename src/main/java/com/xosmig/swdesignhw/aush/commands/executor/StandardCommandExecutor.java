@@ -1,8 +1,11 @@
 package com.xosmig.swdesignhw.aush.commands.executor;
 
+import com.xosmig.swdesignhw.aush.ShellInternalError;
 import com.xosmig.swdesignhw.aush.commands.*;
+import com.xosmig.swdesignhw.aush.commands.executor.builtin.*;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.environment.Pipe;
+import com.xosmig.swdesignhw.aush.utils.Reference;
 
 import java.io.*;
 import java.util.*;
@@ -26,17 +29,18 @@ public class StandardCommandExecutor implements CommandExecutor {
 
     static {
         BUILTINS = new HashMap<>();
+        BUILTINS.put("pwd", new PwdBuiltin());
+        BUILTINS.put("exit", new ExitBuiltin());
+        BUILTINS.put("echo", new EchoBuiltin());
+        BUILTINS.put("wc", new WcBuiltin());
+        BUILTINS.put("cat", new CatBuiltin());
+    }
 
-        // `pwd` command prints the current working directory
-        BUILTINS.put("pwd", (Environment env, List<String> args) -> {
-            env.getOutput().println(env.getWorkingDir().toAbsolutePath());
-            return env.update().setLastExitCode(0).finish();
-        });
+    private StandardCommandExecutor() {
+    }
 
-        // exit command just informs the user interface that the used wants to exit the shell.
-        BUILTINS.put("exit", (Environment env, List<String> args) -> {
-            return env.update().shouldExit(true).setLastExitCode(0).finish();
-        });
+    public static StandardCommandExecutor get() {
+        return new StandardCommandExecutor();
     }
 
     /**
@@ -134,34 +138,42 @@ public class StandardCommandExecutor implements CommandExecutor {
                 .redirectOutput(env.getOutput().getRedirect())
                 .start();
 
-        final Thread processOutputReader = new Thread(() -> {
+        final Reference<Exception> outputReaderException = new Reference<>();
+        final Thread outputReader = new Thread(() -> {
             try {
                 env.getOutput().doRedirection(process.getInputStream());
+            } catch (InterruptedIOException e) {
+                // ignored
             } catch (Exception e) {
-                // oops
+                outputReaderException.obj = e;
             }
         });
-        processOutputReader.start();
+        outputReader.start();
 
-        final Thread processInputWriter = new Thread(() -> {
+        final Reference<Exception> inputWriterException = new Reference<>();
+        final Thread inputWriter = new Thread(() -> {
             try {
                 env.getInput().doRedirection(process.getOutputStream());
+            } catch (InterruptedIOException e) {
+                // ignored
             } catch (Exception e) {
-                // oops
+                inputWriterException.obj = e;
             }
         });
-        processInputWriter.start();
+        inputWriter.start();
 
         int exitCode = process.waitFor();
-        processInputWriter.interrupt();
-        processInputWriter.join();
-        processOutputReader.join();
+        inputWriter.interrupt();
+        inputWriter.join();
+        outputReader.join();
+
+        if (outputReaderException.obj != null) {
+            throw new ShellInternalError(outputReaderException.obj);
+        }
+        if (inputWriterException.obj != null) {
+            throw new ShellInternalError(inputWriterException.obj);
+        }
 
         return env.update().setLastExitCode(exitCode).finish();
-    }
-
-    @FunctionalInterface
-    private interface Builtin {
-        Environment execute(Environment env, List<String> args) throws IOException;
     }
 }

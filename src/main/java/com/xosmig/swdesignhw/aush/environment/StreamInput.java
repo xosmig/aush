@@ -1,8 +1,9 @@
 package com.xosmig.swdesignhw.aush.environment;
 
+import com.xosmig.swdesignhw.aush.utils.Utils;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
 public class StreamInput implements Input {
@@ -20,6 +21,11 @@ public class StreamInput implements Input {
     }
 
     @Override
+    public InputStream inputStream() {
+        return ins;
+    }
+
+    @Override
     public ProcessBuilder.Redirect getRedirect() {
         return ProcessBuilder.Redirect.PIPE;
     }
@@ -27,16 +33,7 @@ public class StreamInput implements Input {
     @Override
     public void doRedirection(OutputStream processInput) throws IOException {
         try {
-            while (true) {
-                if (Thread.interrupted()) {
-                    throw new InterruptedIOException();
-                }
-                int b = ins.read();
-                if (b == -1) {
-                    break;
-                }
-                processInput.write(b);
-            }
+            Utils.redirectStream(ins, processInput);
         } finally {
             ins.close();
             processInput.close();

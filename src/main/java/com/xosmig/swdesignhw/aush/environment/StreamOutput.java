@@ -1,5 +1,7 @@
 package com.xosmig.swdesignhw.aush.environment;
 
+import com.xosmig.swdesignhw.aush.utils.Utils;
+
 import java.io.*;
 
 public class StreamOutput implements Output {
@@ -24,16 +26,7 @@ public class StreamOutput implements Output {
     @Override
     public void doRedirection(InputStream processOutput) throws IOException {
         try {
-            while (true) {
-                if (Thread.interrupted()) {
-                    throw new InterruptedIOException();
-                }
-                int b = processOutput.read();
-                if (b == -1) {
-                    break;
-                }
-                outs.write(b);
-            }
+            Utils.redirectStream(processOutput, outs);
         } finally {
             outs.close();
             processOutput.close();
@@ -41,7 +34,7 @@ public class StreamOutput implements Output {
     }
 
     @Override
-    public void println(Object obj) {
-        outs.println(obj);
+    public PrintStream printStream() {
+        return outs;
     }
 }
