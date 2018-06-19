@@ -161,17 +161,19 @@ public class StandardCommandExecutor implements CommandExecutor {
             return BUILTINS.get(name).execute(env, command.subList(1, command.size()));
         }
 
-        final Process process = new ProcessBuilder(command)
-                .directory(env.getWorkingDir().toFile())
-                .redirectErrorStream(true) // the error stream is merged with the output stream
-                .redirectInput(env.getInput().getRedirect())
-                .redirectOutput(env.getOutput().getRedirect())
-                .start();
+        final ProcessBuilder processBuilder = new ProcessBuilder(command)
+                .directory(env.getWorkingDir().toFile());
+        // the error stream is merged with the output stream
+        processBuilder.redirectErrorStream(true);
+        env.getInput().prepare(processBuilder);
+        env.getOutput().prepare(processBuilder);
+
+        final Process process = processBuilder.start();
 
         final Exception[] outputReaderException = new Exception[1];
         final Thread outputReader = new Thread(() -> {
             try {
-                env.getOutput().doRedirection(process.getInputStream());
+                env.getOutput().doRedirection(process);
             } catch (InterruptedIOException e) {
                 // ignored
             } catch (Exception e) {
@@ -183,7 +185,7 @@ public class StandardCommandExecutor implements CommandExecutor {
         final Exception[] inputWriterException = new Exception[1];
         final Thread inputWriter = new Thread(() -> {
             try {
-                env.getInput().doRedirection(process.getOutputStream());
+                env.getInput().doRedirection(process);
             } catch (InterruptedIOException e) {
                 // ignored
             } catch (Exception e) {

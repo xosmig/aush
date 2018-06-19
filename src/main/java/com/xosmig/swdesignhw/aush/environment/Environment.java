@@ -1,6 +1,5 @@
 package com.xosmig.swdesignhw.aush.environment;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -20,6 +19,7 @@ import org.pcollections.PMap;
  * Use <code>Environment.update()</code> to non-destructively update an existing one.
  */
 public final class Environment {
+
     private static final Environment DEFAULT = new Environment(Inherit.input(), Inherit.output(),
             Paths.get(""), HashTreePMap.empty(), 0, false);
 
