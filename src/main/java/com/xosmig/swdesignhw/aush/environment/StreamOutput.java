@@ -4,18 +4,22 @@ import com.xosmig.swdesignhw.aush.utils.Utils;
 
 import java.io.*;
 
-public class StreamOutput implements Output {
+public class StreamOutput implements CloseableOutput {
     private final PrintStream outs;
 
-    private StreamOutput(PrintStream outs) {
+    public StreamOutput(PrintStream outs) {
         this.outs = outs;
+    }
+
+    public StreamOutput(OutputStream outs) {
+        this(outs instanceof PrintStream ? (PrintStream) outs : new PrintStream(outs));
     }
 
     public static Output get(OutputStream outs) {
         if (outs == System.out) {
             return Inherit.output();
         }
-        return new StreamOutput(outs instanceof PrintStream ? (PrintStream) outs : new PrintStream(outs));
+        return new StreamOutput(outs);
     }
 
     @Override
@@ -28,7 +32,6 @@ public class StreamOutput implements Output {
         try {
             Utils.redirectStream(processOutput, outs);
         } finally {
-            outs.close();
             processOutput.close();
         }
     }
@@ -36,5 +39,10 @@ public class StreamOutput implements Output {
     @Override
     public PrintStream printStream() {
         return outs;
+    }
+
+    @Override
+    public void close() throws IOException {
+        outs.close();
     }
 }

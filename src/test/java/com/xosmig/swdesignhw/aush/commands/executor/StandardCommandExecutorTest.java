@@ -73,4 +73,10 @@ public class StandardCommandExecutorTest extends TestBase {
         compileAndRun(env, "wc", poem);
         assertOutput(fromUnixStr("     14      93     589\n"));
     }
+
+    @Test
+    public void testPipeEchoWc() throws Exception {
+        compileAndRun(env, "echo hello, world! | wc");
+        assertOutput(fromUnixStr("      1       2      14\n"));
+    }
 }

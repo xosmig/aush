@@ -5,9 +5,12 @@ import com.xosmig.swdesignhw.aush.commands.*;
 import com.xosmig.swdesignhw.aush.commands.executor.builtin.*;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.environment.Pipe;
+import com.xosmig.swdesignhw.aush.utils.Utils;
+import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -16,7 +19,7 @@ import java.util.stream.Collectors;
  * for the language at the moment of its first design.
  * Hence, all the other parts of the language (Environment, Tokenizer, Parser, Commands)
  * were designed with this semantic in mind.
- *
+ * <p>
  * The semantic is very similar to the semantic of bash shell.
  */
 public class StandardCommandExecutor implements CommandExecutor {
@@ -45,7 +48,7 @@ public class StandardCommandExecutor implements CommandExecutor {
     /**
      * Assigns to the variable <code>cmd.getName()</code> the value obtained
      * as the result expansion of <code>cmd.getValueToken()</code>.
-     *
+     * <p>
      * No need to explicitly create a variable, it will be created at the moment of the first
      * assignment.
      * If a variable with this value already existed, it will be overwritten.
@@ -79,7 +82,7 @@ public class StandardCommandExecutor implements CommandExecutor {
     /**
      * Executes two commands in parallel and pipes the output of the left (source) command
      * to the input of the right (destination) command.
-     *
+     * <p>
      * Since the commands are run in parallel, they cannot modify the environment
      * (i.e. the modified environments are discarded).
      * With the exception of the the exit-code of the rightmost command in a pipeline.
@@ -94,18 +97,46 @@ public class StandardCommandExecutor implements CommandExecutor {
     public Environment execute(Environment env, PipeCommand cmd) throws IOException, InterruptedException {
         final Pipe pipe = Pipe.get();
 
-        // TODO: run in separate threads
-        cmd.getSource().accept(env.update().setOutput(pipe.getOutput()).finish(), this);
-        final Environment envRight =
-                cmd.getDestination().accept(env.update().setInput(pipe.getInput()).finish(), this);
+        final ExecutorService leftService = Executors.newSingleThreadExecutor();
+        final CompletableFuture<Void> leftFuture = CompletableFuture.runAsync(() -> {
+            try {
+                cmd.getSource().accept(env.update().setOutput(pipe.getOutput()).finish(), this);
+                pipe.getOutput().close();
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        }, leftService);
 
-        return env.update().setLastExitCode(envRight.getLastExitCode()).finish();
+        final ExecutorService rightService = Executors.newSingleThreadExecutor();
+        final CompletableFuture<Environment> rightFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                final Environment result =
+                        cmd.getDestination().accept(env.update().setInput(pipe.getInput()).finish(), this);
+                // We have to read all the bytes from the input stream to avoid the writer hang
+                // waiting for the capacity.
+                // Closing the InputStream is a bad idea, since it would cause an unwanted exception
+                // in the writer.
+                Utils.redirectStream(pipe.getInput().inputStream(), new NullOutputStream());
+                return result;
+            } catch (Exception e) {
+                throw new CompletionException(e);
+            }
+        }, rightService);
+
+        try {
+            waitBothOrException(leftFuture, rightFuture);
+            return env.update().setLastExitCode(rightFuture.get().getLastExitCode()).finish();
+        } catch (ExecutionException e) {
+            // We throw `ShellInternalException` here since all meaningful possible instances
+            // of ExecutionException are unwrapped inside `waitBothOrException` method.
+            throw new ShellInternalException(e.getCause());
+        }
     }
 
     /**
      * The first token of the sequence is treated as the program name and the other tokens are
      * treated as its parameters.
-     *
+     * <p>
      * The program name is either the name of one of the built-in functions (e.g. `pwd`),
      * or name of a binary to be executed.
      *
@@ -174,5 +205,43 @@ public class StandardCommandExecutor implements CommandExecutor {
         }
 
         return env.update().setLastExitCode(exitCode).finish();
+    }
+
+    // this method cannot be replaced with allOf, since we need to cancel the other future,
+    // when an exception is thrown in one of them.
+    private static void waitBothOrException(CompletableFuture leftFuture, CompletableFuture rightFuture)
+        throws IOException, InterruptedException {
+        Throwable firstThrown = null;
+        try {
+            CompletableFuture.anyOf(leftFuture, rightFuture).get();
+        } catch (Throwable th) {
+            firstThrown = th;
+            leftFuture.cancel(true);
+            rightFuture.cancel(true);
+        }
+
+        try {
+            CompletableFuture.allOf(leftFuture, rightFuture).get();
+        } catch (Throwable th) {
+            if (firstThrown == null) {
+                firstThrown = th;
+            }
+            wrapAndThrow(firstThrown);
+        }
+    }
+
+    private static void wrapAndThrow(Throwable e) throws IOException, InterruptedException {
+        if (e == null) {
+            throw new NullPointerException();
+        }
+
+        if (e instanceof IOException) {
+            throw (IOException) e;
+        }
+        if (e instanceof InterruptedException) {
+            throw (InterruptedException) e;
+        }
+
+        throw new ShellInternalException(e);
     }
 }

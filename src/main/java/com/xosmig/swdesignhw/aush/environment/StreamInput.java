@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class StreamInput implements Input {
+public class StreamInput implements CloseableInput {
     private final InputStream ins;
 
-    private StreamInput(InputStream ins) {
+    public StreamInput(InputStream ins) {
         this.ins = ins;
     }
 
@@ -35,8 +35,12 @@ public class StreamInput implements Input {
         try {
             Utils.redirectStream(ins, processInput);
         } finally {
-            ins.close();
             processInput.close();
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        ins.close();
     }
 }

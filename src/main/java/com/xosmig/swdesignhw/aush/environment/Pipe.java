@@ -4,10 +4,10 @@ import java.io.*;
 
 
 public final class Pipe {
-    private final Input input;
-    private final Output output;
+    private final CloseableInput input;
+    private final CloseableOutput output;
 
-    private Pipe(Input input, Output output) {
+    private Pipe(CloseableInput input, CloseableOutput output) {
         this.input = input;
         this.output = output;
     }
@@ -25,14 +25,14 @@ public final class Pipe {
             System.exit(1);
         }
 
-        return new Pipe(StreamInput.get(ins), StreamOutput.get(outs));
+        return new Pipe(new StreamInput(ins), new StreamOutput(outs));
     }
 
-    public Input getInput() {
+    public CloseableInput getInput() {
         return input;
     }
 
-    public Output getOutput() {
+    public CloseableOutput getOutput() {
         return output;
     }
 }
