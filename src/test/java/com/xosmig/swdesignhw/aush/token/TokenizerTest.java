@@ -1,5 +1,6 @@
 package com.xosmig.swdesignhw.aush.token;
 
+import com.xosmig.swdesignhw.aush.TestBase;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -8,15 +9,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class TokenizerTest {
-    private PlainTextToken plainText(String text) {
-        return new PlainTextToken(CmdString.parse(text));
-    }
-
-    private DoubleQuotedToken doubleQuoted(String text) {
-        return new DoubleQuotedToken(CmdString.parse(text));
-    }
-
+public class TokenizerTest extends TestBase {
     @Test
     public void testPlainText() {
         assertEquals(Collections.singletonList(plainText("foobar")),
@@ -43,7 +36,7 @@ public class TokenizerTest {
     @Test
     public void testMultipleSeparators() {
         assertEquals(Arrays.asList(plainText("hello,"), plainText("world")),
-                Tokenizer.tokenize("hello,\t  \n\n world"));
+                Tokenizer.tokenize(fromUnixStr("hello,\t  \n\n world")));
     }
 
     @Test

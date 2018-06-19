@@ -6,6 +6,7 @@ import com.xosmig.swdesignhw.aush.token.Token;
 import java.util.List;
 
 public final class BashLikeFullParser implements Parser {
+
     private final Parser parser =
             new SemicolonParser(
                     new PipeParser(

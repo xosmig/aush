@@ -17,9 +17,6 @@ public final class Tokenizer {
      * Each non-escaped quote in {@code text} should have a pair
      * (another non-escaped quote of the same type).
      *
-     * Important note: single quotes are not currently supported, they treated
-     * just as regular characters (i.e. as letters).
-     *
      * @param text the text to be tokenized.
      * @throws IllegalArgumentException if
      */
@@ -104,14 +101,24 @@ public final class Tokenizer {
 
         private Optional<Integer> tryQuote(int idx) {
             CmdChar ch = text.charAt(idx);
-            if (ch.equals(CmdChar.get('\"', false))) {
+            CmdChar doubleQuote = CmdChar.get('\"', false);
+            CmdChar singleQuote = CmdChar.get('\'', false);
+
+            if (ch.equals(doubleQuote) || ch.equals(singleQuote)) {
                 endPlainTextToken();
-                int rightQuoteRelative = text.substring(idx + 1).indexOf(ch);
+                final int rightQuoteRelative = text.substring(idx + 1).indexOf(ch);
                 if (rightQuoteRelative == -1) {
-                    throw new IllegalArgumentException("Double quote without a pair");
+                    throw new IllegalArgumentException("quote without a pair");
                 }
-                int rightQuote = idx + 1 + rightQuoteRelative;
-                addConcatenatableToken(new DoubleQuotedToken(text.substring(idx + 1, rightQuote)));
+                final int rightQuote = idx + 1 + rightQuoteRelative;
+
+                final CmdString content = text.substring(idx + 1, rightQuote);
+                if (ch.equals(doubleQuote)) {
+                    addConcatenatableToken(new DoubleQuotedToken(content));
+                } else {
+                    addConcatenatableToken(new SingleQuotedToken(content));
+                }
+
                 return Optional.of(rightQuote + 1);
             }
             return Optional.empty();
@@ -150,6 +157,13 @@ public final class Tokenizer {
             result.append("\"");
             result.append(token.getContent().toString());
             result.append("\"");
+        }
+
+        @Override
+        public void visit(SingleQuotedToken token) {
+            result.append("\'");
+            result.append(token.getContent().toString());
+            result.append("\'");
         }
 
         @Override

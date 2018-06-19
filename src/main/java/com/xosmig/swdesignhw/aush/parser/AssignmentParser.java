@@ -7,6 +7,7 @@ import com.xosmig.swdesignhw.aush.token.*;
 import java.util.List;
 
 public final class AssignmentParser implements Parser {
+
     private final Parser nextParser;
 
     public AssignmentParser(Parser nextParser) {
@@ -72,6 +73,10 @@ public final class AssignmentParser implements Parser {
 
         @Override
         public void visit(DoubleQuotedToken token) {
+        }
+
+        @Override
+        public void visit(SingleQuotedToken token) {
         }
 
         @Override

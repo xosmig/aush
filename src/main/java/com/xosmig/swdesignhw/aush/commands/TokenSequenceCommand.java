@@ -12,7 +12,8 @@ import java.util.List;
  * Exact semantic depends on the command executor.
  * See <coode>StandardCommandExecutor</coode> for information about the default semantic.
  */
-public class TokenSequenceCommand implements Command {
+public final class TokenSequenceCommand implements Command {
+
     private final List<Token> tokens;
 
     /**

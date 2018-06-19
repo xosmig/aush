@@ -14,7 +14,8 @@ import java.util.Objects;
  * Note that it's a common technique to use another instance of <code>MultipleCommand</code>
  * as one (preferably, left) or both sub-commands.
  */
-public class MultipleCommands implements Command {
+public final class MultipleCommands implements Command {
+
     private final Command left;
     private final Command right;
 

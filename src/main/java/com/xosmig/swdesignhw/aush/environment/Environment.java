@@ -1,6 +1,5 @@
 package com.xosmig.swdesignhw.aush.environment;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
@@ -20,6 +19,7 @@ import org.pcollections.PMap;
  * Use <code>Environment.update()</code> to non-destructively update an existing one.
  */
 public final class Environment {
+
     private static final Environment DEFAULT = new Environment(Inherit.input(), Inherit.output(),
             Paths.get(""), HashTreePMap.empty(), 0, false);
 
@@ -152,14 +152,14 @@ public final class Environment {
             CmdChar ch = text.charAt(idx);
 
             if (!ch.equals(CmdChar.get('$', false))) {
-                result.append(ch);
+                result.append(ch.getCh());
                 idx += 1;
                 continue;
             }
 
             Optional<String> varNameOpt = parseVarName(text.substring(idx + 1));
             if (!varNameOpt.isPresent()) {
-                result.append(ch);
+                result.append(ch.getCh());
                 idx += 1;
                 continue;
             }
@@ -187,12 +187,14 @@ public final class Environment {
         public int lastExitCode;
         public boolean shouldExit;
 
+        // Always make sure that all fields are assigned here
         private Builder(Environment source) {
             this.input = source.input;
             this.output = source.output;
             this.workingDir = source.workingDir;
             this.varValues = source.varValues;
             this.lastExitCode = source.lastExitCode;
+            this.shouldExit = source.shouldExit;
         }
 
         /**
@@ -294,6 +296,11 @@ public final class Environment {
         @Override
         public void visit(DoubleQuotedToken token) {
             result.append(expandVariables(token.getContent()));
+        }
+
+        @Override
+        public void visit(SingleQuotedToken token) {
+            result.append(token.getContent());
         }
 
         @Override

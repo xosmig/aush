@@ -14,6 +14,7 @@ import java.util.Objects;
  * See <coode>StandardCommandExecutor</coode> for information about the default semantic.
  */
 public final class AssignmentCommand implements Command {
+
     private final String name;
     private final Token valueToken;
 

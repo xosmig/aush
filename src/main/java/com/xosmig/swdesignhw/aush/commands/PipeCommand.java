@@ -15,7 +15,8 @@ import java.util.Objects;
  * Note that it's a common technique to use another instance of <code>PipeCommand</code>
  * as one (preferably, source) or both sub-commands.
  */
-public class PipeCommand implements Command {
+public final class PipeCommand implements Command {
+
     private final Command source;
     private final Command destination;
 

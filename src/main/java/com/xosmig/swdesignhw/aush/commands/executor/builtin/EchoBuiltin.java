@@ -8,7 +8,7 @@ import java.util.StringJoiner;
 /**
  * {@code echo} command prints its arguments to the standard output.
  */
-public class EchoBuiltin implements Builtin {
+public final class EchoBuiltin implements Builtin {
 
     @Override
     public Environment execute(Environment env, List<String> args) {

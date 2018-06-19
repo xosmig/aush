@@ -11,6 +11,8 @@ public interface TokenVisitor {
 
     void visit(DoubleQuotedToken token);
 
+    void visit(SingleQuotedToken token);
+
     void visit(PlainTextToken token);
 
     void visit(ConcatenatedToken token);
