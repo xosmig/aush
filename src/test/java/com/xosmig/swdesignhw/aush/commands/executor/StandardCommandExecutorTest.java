@@ -14,6 +14,7 @@ import org.pcollections.HashTreePMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
@@ -85,5 +86,12 @@ public class StandardCommandExecutorTest extends TestBase {
     public void testPipeEchoWc() throws Exception {
         // We just test that it doesn't hang. The output of this command is platform-dependant.
         compileAndRun(env, "echo hello, world | wc");
+    }
+
+    @Test
+    public void testPwd() throws Exception {
+        Path workingDirPath = Paths.get("/hello/world/path");
+        compileAndRun(env.update().setWorkingDir(workingDirPath).finish(), "pwd");
+        assertOutput(fromUnixStr(workingDirPath.toString() + "\n"));
     }
 }
