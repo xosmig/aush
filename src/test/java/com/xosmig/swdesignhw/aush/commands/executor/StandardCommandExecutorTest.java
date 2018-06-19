@@ -70,6 +70,6 @@ public class StandardCommandExecutorTest extends TestBase {
                         "Farewell to the forests and wild-hanging woods, \n" +
                         "Farewell to the torrents and loud-pouring floods. \n");
         compileAndRun(env, "wc", poem);
-        assertOutput(unixStr("     15      93     590\n"));
+        assertOutput(unixStr("     14      93     589\n"));
     }
 }
