@@ -94,4 +94,16 @@ public class StandardCommandExecutorTest extends TestBase {
         compileAndRun(env.update().setWorkingDir(workingDirPath).finish(), "pwd");
         assertOutput(fromUnixStr(workingDirPath.toString() + "\n"));
     }
+
+    @Test
+    public void testMultipleCommandsSimple() throws Exception {
+        compileAndRun(env, "echo hello; echo world; echo;");
+        assertOutput(fromUnixStr("hello\nworld\n\n"));
+    }
+
+    @Test
+    public void testMultipleCommandsWithAssignment() throws Exception {
+        compileAndRun(env, "a=hello; echo $a, world!; a=hi; echo $a, world!");
+        assertOutput(fromUnixStr("hello, world!\nhi, world!\n"));
+    }
 }
