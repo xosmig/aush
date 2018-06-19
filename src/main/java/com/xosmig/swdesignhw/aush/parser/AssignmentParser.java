@@ -76,6 +76,10 @@ public final class AssignmentParser implements Parser {
         }
 
         @Override
+        public void visit(SingleQuotedToken token) {
+        }
+
+        @Override
         public void visit(SemicolonToken token) {
         }
 

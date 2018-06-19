@@ -119,4 +119,10 @@ public final class StandardCommandExecutorTest extends TestBase {
         assertTrue(resEnv.shouldExit());
         assertOutput(fromUnixStr("hello\n"));
     }
+
+    @Test
+    public void testExpansionAndQuotes() throws Exception {
+        assertSuccess(compileAndRun(env, "a=5; echo \'123$a\'; echo \"123$a\"; echo 123$a"));
+        assertOutput(fromUnixStr("123$a\n1235\n1235\n"));
+    }
 }

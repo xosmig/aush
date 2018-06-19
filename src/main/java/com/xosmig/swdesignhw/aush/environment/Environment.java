@@ -299,6 +299,11 @@ public final class Environment {
         }
 
         @Override
+        public void visit(SingleQuotedToken token) {
+            result.append(token.getContent());
+        }
+
+        @Override
         public void visit(PlainTextToken token) {
             result.append(expandVariables(token.getContent()));
         }
