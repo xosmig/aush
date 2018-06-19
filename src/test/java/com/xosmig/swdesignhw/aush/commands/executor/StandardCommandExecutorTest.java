@@ -92,7 +92,7 @@ public class StandardCommandExecutorTest extends TestBase {
     public void testPwd() throws Exception {
         Path workingDirPath = Paths.get("/hello/world/path");
         compileAndRun(env.update().setWorkingDir(workingDirPath).finish(), "pwd");
-        assertOutput(fromUnixStr(workingDirPath.toString() + "\n"));
+        assertOutput(fromUnixStr(workingDirPath.toAbsolutePath().toString() + "\n"));
     }
 
     @Test
