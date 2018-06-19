@@ -7,6 +7,7 @@ import com.xosmig.swdesignhw.aush.token.Token;
 import java.util.List;
 
 public final class TokenSequenceParser implements Parser {
+
     @Override
     public Command parse(List<Token> text) {
         return new TokenSequenceCommand(text);

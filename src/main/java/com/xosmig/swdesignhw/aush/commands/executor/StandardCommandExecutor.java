@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * <p>
  * The semantic is very similar to the semantic of bash shell.
  */
-public class StandardCommandExecutor implements CommandExecutor {
+public final class StandardCommandExecutor implements CommandExecutor {
 
     /**
      * Maps the names of builtin functions to their implementations.

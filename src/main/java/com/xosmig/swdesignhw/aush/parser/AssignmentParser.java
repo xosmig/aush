@@ -7,6 +7,7 @@ import com.xosmig.swdesignhw.aush.token.*;
 import java.util.List;
 
 public final class AssignmentParser implements Parser {
+
     private final Parser nextParser;
 
     public AssignmentParser(Parser nextParser) {
