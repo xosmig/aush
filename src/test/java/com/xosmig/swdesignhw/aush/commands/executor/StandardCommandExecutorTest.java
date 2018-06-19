@@ -14,6 +14,7 @@ import org.pcollections.HashTreePMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -74,9 +75,15 @@ public class StandardCommandExecutorTest extends TestBase {
         assertOutput(fromUnixStr("     14      93     589\n"));
     }
 
-    @Test
-    public void testPipeSimpleEchoCat() throws Exception {
+    @Test(timeout = 1000)
+    public void testPipeEchoCat() throws Exception {
         compileAndRun(env, "echo hello, world! | cat");
         assertOutput(fromUnixStr("hello, world!\n"));
+    }
+
+    @Test(timeout = 1000)
+    public void testPipeEchoWc() throws Exception {
+        // We just test that it doesn't hang. The output of this command is platform-dependant.
+        compileAndRun(env, "echo hello, world | wc");
     }
 }
