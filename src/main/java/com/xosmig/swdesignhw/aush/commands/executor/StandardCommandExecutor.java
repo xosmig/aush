@@ -1,11 +1,10 @@
 package com.xosmig.swdesignhw.aush.commands.executor;
 
-import com.xosmig.swdesignhw.aush.ShellInternalError;
+import com.xosmig.swdesignhw.aush.ShellInternalException;
 import com.xosmig.swdesignhw.aush.commands.*;
 import com.xosmig.swdesignhw.aush.commands.executor.builtin.*;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.environment.Pipe;
-import com.xosmig.swdesignhw.aush.utils.Reference;
 
 import java.io.*;
 import java.util.*;
@@ -138,26 +137,26 @@ public class StandardCommandExecutor implements CommandExecutor {
                 .redirectOutput(env.getOutput().getRedirect())
                 .start();
 
-        final Reference<Exception> outputReaderException = new Reference<>();
+        final Exception[] outputReaderException = new Exception[1];
         final Thread outputReader = new Thread(() -> {
             try {
                 env.getOutput().doRedirection(process.getInputStream());
             } catch (InterruptedIOException e) {
                 // ignored
             } catch (Exception e) {
-                outputReaderException.obj = e;
+                outputReaderException[0] = e;
             }
         });
         outputReader.start();
 
-        final Reference<Exception> inputWriterException = new Reference<>();
+        final Exception[] inputWriterException = new Exception[1];
         final Thread inputWriter = new Thread(() -> {
             try {
                 env.getInput().doRedirection(process.getOutputStream());
             } catch (InterruptedIOException e) {
                 // ignored
             } catch (Exception e) {
-                inputWriterException.obj = e;
+                inputWriterException[0] = e;
             }
         });
         inputWriter.start();
@@ -167,11 +166,11 @@ public class StandardCommandExecutor implements CommandExecutor {
         inputWriter.join();
         outputReader.join();
 
-        if (outputReaderException.obj != null) {
-            throw new ShellInternalError(outputReaderException.obj);
+        if (outputReaderException[0] != null) {
+            throw new ShellInternalException(outputReaderException[0]);
         }
-        if (inputWriterException.obj != null) {
-            throw new ShellInternalError(inputWriterException.obj);
+        if (inputWriterException[0] != null) {
+            throw new ShellInternalException(inputWriterException[0]);
         }
 
         return env.update().setLastExitCode(exitCode).finish();
