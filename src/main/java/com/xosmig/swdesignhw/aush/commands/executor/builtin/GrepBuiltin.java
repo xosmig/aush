@@ -59,13 +59,10 @@ public class GrepBuiltin implements Builtin {
                 return env.update().setLastExitCode(0).finish();
             }
 
-            try {
-                afterContext = Long.parseLong(cmd.getOptionValue("A"));
-            } catch (NumberFormatException e) {
-                throw new ParseException("invalid number format: " + e.getMessage());
-            }
-            if (afterContext < 0) {
-                throw new ParseException("invalid argument for option -A: negative numbers are not allowed");
+            if (cmd.hasOption("A")) {
+                afterContext = parsePositiveLong(cmd.getOptionValue("A"));
+            } else {
+                afterContext = 0;
             }
 
             cmdArgs = cmd.getArgList();
@@ -125,7 +122,8 @@ public class GrepBuiltin implements Builtin {
         return found;
     }
 
-    private boolean doGrepStreams(Parameters parameters, InputStream input, PrintStream output) throws IOException {
+    private boolean doGrepStreams(Parameters parameters, InputStream input, PrintStream output)
+            throws IOException {
         final BufferedReader scanner = new BufferedReader(new InputStreamReader(input));
 
         Pattern regexp = createRegexp(parameters);
@@ -160,6 +158,19 @@ public class GrepBuiltin implements Builtin {
         String pattern = (parameters.wordRegexp ? "\\b" + parameters.pattern + "\\b" : parameters.pattern);
         int flags = (parameters.ignoreCase ? Pattern.CASE_INSENSITIVE : 0);
         return Pattern.compile(pattern, flags);
+    }
+
+    private static long parsePositiveLong(String str) throws ParseException {
+        final long res;
+        try {
+            res = Long.parseLong(str);
+        } catch (NumberFormatException e) {
+            throw new ParseException("invalid number format: " + e.getMessage());
+        }
+        if (res < 0) {
+            throw new ParseException("invalid argument for option -A: negative numbers are not allowed");
+        }
+        return res;
     }
 
     private static class Parameters {

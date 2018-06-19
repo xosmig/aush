@@ -70,7 +70,7 @@ public class StreamOutput implements CloseableOutput {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         outs.close();
     }
 }

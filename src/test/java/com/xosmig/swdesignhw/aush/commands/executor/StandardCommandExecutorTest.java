@@ -21,7 +21,8 @@ import static org.junit.Assert.*;
 
 public final class StandardCommandExecutorTest extends TestBase {
     // don't use fromUnixStr here, since it would make the number of bytes platform-dependant
-    private static final String POEM = "Farewell to the Highlands, farewell to the North, \n" +
+    private static final String POEM = "" +
+            "Farewell to the Highlands, farewell to the North, \n" +
             "The birth-place of Valour, the country of Worth; \n" +
             "Wherever I wander, wherever I rove, \n" +
             "The hills of the Highlands for ever I love. \n" +
@@ -40,14 +41,18 @@ public final class StandardCommandExecutorTest extends TestBase {
         return BashLikeCommandCompiler.get().compile(command);
     }
 
-    private CommandExecutor executor = StandardCommandExecutor.get();
-    final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    private Environment env = Environment.builder()
+    private final CommandExecutor executor = StandardCommandExecutor.get();
+    private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    private final Environment env = Environment.builder()
             .setInput(StreamInput.get(new NullInputStream(0)))
             .setOutput(StreamOutput.get(output))
             .setVarValues(HashTreePMap.singleton("myVar", "myValue"))
             .setLastExitCode(123)
             .finish();
+
+    private String getOutputString() {
+        return new String(output.toByteArray());
+    }
 
     private Environment compileAndRun(Environment env, String command, String inputData) throws Exception {
         return compileAndRun(env, command, new ByteArrayInputStream(inputData.getBytes()));
@@ -62,11 +67,16 @@ public final class StandardCommandExecutorTest extends TestBase {
     }
 
     private void assertSuccess(Environment env) {
-        assertEquals(0, env.getLastExitCode());
+        try {
+            assertEquals(0, env.getLastExitCode());
+        } catch (AssertionError e) {
+            System.err.println(getOutputString());
+            throw e;
+        }
     }
 
     private void assertOutput(String expected) {
-        assertEquals(expected, new String(output.toByteArray()));
+        assertEquals(expected, getOutputString());
     }
 
     @Test
@@ -124,5 +134,105 @@ public final class StandardCommandExecutorTest extends TestBase {
     public void testExpansionAndQuotes() throws Exception {
         assertSuccess(compileAndRun(env, "a=5; echo \'123$a\'; echo \"123$a\"; echo 123$a"));
         assertOutput(fromUnixStr("123$a\n1235\n1235\n"));
+    }
+
+    @Test(timeout = 1000)
+    public void testGrepSimple() throws Exception {
+        // The last like doesn't end with \n deliberately
+        String input = fromUnixStr("" +
+                "hello, world!\n" +
+                "hello, foobar1, how r u?\n" +
+                "hellofoobaz2\n" +
+                "\n" +
+                "hello, foo bar 3\n" +
+                "   hello, fooba 4");
+
+        assertSuccess(compileAndRun(env, "grep fooba.\\\\d", input));
+        assertOutput(fromUnixStr("" +
+                "hello, foobar1, how r u?\n" +
+                "hellofoobaz2\n" +
+                "   hello, fooba 4\n"));
+    }
+
+    @Test(timeout = 1000)
+    public void testGrepAfterContext() throws Exception {
+        String input = fromUnixStr("" +
+                "01-YES\n" +
+                "02-YES\n" +
+                "03-NO \n" +
+                "04-YES\n" +
+                "05-NO\n" +
+                "06-NO\n" +
+                "07-NO\n" +
+                "08-NO\n" +
+                "09-YES\n" +
+                "10-NO\n" +
+                "11-NO\n" +
+                "12-YES\n" +
+                "13-NO\n");
+
+        assertSuccess(compileAndRun(env, "grep YES -A 2", input));
+        assertOutput(fromUnixStr("" +
+                "01-YES\n" +
+                "02-YES\n" +
+                "03-NO \n" +
+                "04-YES\n" +
+                "05-NO\n" +
+                "06-NO\n" +
+                "09-YES\n" +
+                "10-NO\n" +
+                "11-NO\n" +
+                "12-YES\n" +
+                "13-NO\n"));
+    }
+
+    @Test(timeout = 1000)
+    public void testGrepIgnoreCase() throws Exception {
+        String input = fromUnixStr("" +
+                "01-YES\n" +
+                "02-yes\n" +
+                "03-NO \n" +
+                "04-YeS\n" +
+                "05-No\n" +
+                "06-nO\n" +
+                "07-no\n" +
+                "09-Yes\n" +
+                "12-yES\n" +
+                "13-NO\n");
+
+        assertSuccess(compileAndRun(env, "grep YES -i", input));
+        assertOutput(fromUnixStr("" +
+                "01-YES\n" +
+                "02-yes\n" +
+                "04-YeS\n" +
+                "09-Yes\n" +
+                "12-yES\n"));
+    }
+
+    @Test(timeout = 1000)
+    public void testGrepWordRegexp() throws Exception {
+        // The last like doesn't end with \n deliberately
+        String input = fromUnixStr("" +
+                "YES qqq\n" +
+                "notYES qqq\n" +
+                "qqq YESnot\n" +
+                "qqq YES qqq\n" +
+                "qqq YES");
+
+        assertSuccess(compileAndRun(env, "grep YES -w", input));
+        assertOutput(fromUnixStr("" +
+                "YES qqq\n" +
+                "qqq YES qqq\n" +
+                "qqq YES\n"));
+    }
+
+    @Test(timeout = 1000)
+    public void testGrepRequestHelp() throws Exception {
+        // check that at least something was printed and that the command finished with exit code 0
+        assertSuccess(compileAndRun(env, "grep --help"));
+        assertTrue(getOutputString().length() > 10);
+        String[] lines = getOutputString().trim().split(System.lineSeparator());
+        // errors are usually printed on a single line
+        assertTrue(lines.length >= 2);
     }
 }

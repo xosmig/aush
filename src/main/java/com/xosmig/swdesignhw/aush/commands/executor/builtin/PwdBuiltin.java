@@ -10,7 +10,7 @@ import java.util.List;
 public final class PwdBuiltin implements Builtin {
 
     @Override
-    public Environment execute(Environment env, List<String> args) throws InterruptedException {
+    public Environment execute(Environment env, List<String> args) {
         env.printStream().println(env.getWorkingDir().toAbsolutePath());
         return env.update().setLastExitCode(0).finish();
     }
