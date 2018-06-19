@@ -75,8 +75,8 @@ public class StandardCommandExecutorTest extends TestBase {
     }
 
     @Test
-    public void testPipeEchoWc() throws Exception {
-        compileAndRun(env, "echo hello, world! | wc");
-        assertOutput(fromUnixStr("      1       2      14\n"));
+    public void testPipeSimpleEchoCat() throws Exception {
+        compileAndRun(env, "echo hello, world! | cat");
+        assertOutput(fromUnixStr("hello, world!\n"));
     }
 }
