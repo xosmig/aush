@@ -19,9 +19,24 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
-public class StandardCommandExecutorTest extends TestBase {
+public final class StandardCommandExecutorTest extends TestBase {
+    // don't use fromUnixStr here, since it would make the number of bytes platform-dependant
+    private static final String POEM = "Farewell to the Highlands, farewell to the North, \n" +
+            "The birth-place of Valour, the country of Worth; \n" +
+            "Wherever I wander, wherever I rove, \n" +
+            "The hills of the Highlands for ever I love. \n" +
+            "\n" +
+            "Chorus.-My heart's in the Highlands, my heart is not here, \n" +
+            "My heart's in the Highlands, a-chasing the deer; \n" +
+            "Chasing the wild-deer, and following the roe, \n" +
+            "My heart's in the Highlands, wherever I go. \n" +
+            "\n" +
+            "Farewell to the mountains, high-cover'd with snow, \n" +
+            "Farewell to the straths and green vallies below; \n" +
+            "Farewell to the forests and wild-hanging woods, \n" +
+            "Farewell to the torrents and loud-pouring floods. \n";
 
-    protected Command compile(String command) throws ParseErrorException {
+    private Command compile(String command) throws ParseErrorException {
         return BashLikeCommandCompiler.get().compile(command);
     }
 
@@ -31,18 +46,23 @@ public class StandardCommandExecutorTest extends TestBase {
             .setInput(StreamInput.get(new NullInputStream(0)))
             .setOutput(StreamOutput.get(output))
             .setVarValues(HashTreePMap.singleton("myVar", "myValue"))
+            .setLastExitCode(123)
             .finish();
 
-    private void compileAndRun(Environment env, String command, String inputData) throws Exception {
-        compileAndRun(env, command, new ByteArrayInputStream(inputData.getBytes()));
+    private Environment compileAndRun(Environment env, String command, String inputData) throws Exception {
+        return compileAndRun(env, command, new ByteArrayInputStream(inputData.getBytes()));
     }
 
-    private void compileAndRun(Environment env, String command, InputStream input) throws Exception {
-        compileAndRun(env.update().setInput(StreamInput.get(input)).finish(), command);
+    private Environment compileAndRun(Environment env, String command, InputStream input) throws Exception {
+        return compileAndRun(env.update().setInput(StreamInput.get(input)).finish(), command);
     }
 
-    private void compileAndRun(Environment env, String command) throws Exception {
-        compile(command).accept(env, executor);
+    private Environment compileAndRun(Environment env, String command) throws Exception {
+        return compile(command).accept(env, executor);
+    }
+
+    private void assertSuccess(Environment env) {
+        assertEquals(0, env.getLastExitCode());
     }
 
     private void assertOutput(String expected) {
@@ -51,59 +71,44 @@ public class StandardCommandExecutorTest extends TestBase {
 
     @Test
     public void testEchoHelloWorld() throws Exception {
-        compileAndRun(env, "echo hello, world!");
+        assertSuccess(compileAndRun(env, "echo hello, world!"));
         assertOutput(fromUnixStr("hello, world!\n"));
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void testWcPoem() throws Exception {
-        // don't use fromUnixStr here, since it would make the test fail on windows
-        final String poem = "Farewell to the Highlands, farewell to the North, \n" +
-                        "The birth-place of Valour, the country of Worth; \n" +
-                        "Wherever I wander, wherever I rove, \n" +
-                        "The hills of the Highlands for ever I love. \n" +
-                        "\n" +
-                        "Chorus.-My heart's in the Highlands, my heart is not here, \n" +
-                        "My heart's in the Highlands, a-chasing the deer; \n" +
-                        "Chasing the wild-deer, and following the roe, \n" +
-                        "My heart's in the Highlands, wherever I go. \n" +
-                        "\n" +
-                        "Farewell to the mountains, high-cover'd with snow, \n" +
-                        "Farewell to the straths and green vallies below; \n" +
-                        "Farewell to the forests and wild-hanging woods, \n" +
-                        "Farewell to the torrents and loud-pouring floods. \n";
-        compileAndRun(env, "wc", poem);
+        assertSuccess(compileAndRun(env, "wc", POEM));
         assertOutput(fromUnixStr("     14      93     589\n"));
     }
 
     @Test(timeout = 1000)
-    public void testPipeEchoCat() throws Exception {
-        compileAndRun(env, "echo hello, world! | cat");
+    public void testPipeEchoToCat() throws Exception {
+        assertSuccess(compileAndRun(env, "echo hello, world! | cat"));
         assertOutput(fromUnixStr("hello, world!\n"));
     }
 
     @Test(timeout = 1000)
-    public void testPipeEchoWc() throws Exception {
-        // We just test that it doesn't hang. The output of this command is platform-dependant.
-        compileAndRun(env, "echo hello, world | wc");
+    public void testPipeCatPoemToWc() throws Exception {
+        assertSuccess(compileAndRun(env, "cat | wc", POEM));
+        assertOutput(fromUnixStr("     14      93     589\n"));
     }
 
     @Test
     public void testPwd() throws Exception {
         Path workingDirPath = Paths.get("/hello/world/path");
-        compileAndRun(env.update().setWorkingDir(workingDirPath).finish(), "pwd");
+        assertSuccess(compileAndRun(env.update().setWorkingDir(workingDirPath).finish(), "pwd"));
         assertOutput(fromUnixStr(workingDirPath.toAbsolutePath().toString() + "\n"));
     }
 
     @Test
     public void testMultipleCommandsSimple() throws Exception {
-        compileAndRun(env, "echo hello; echo world; echo;");
+        assertSuccess(compileAndRun(env, "echo hello; echo world; echo;"));
         assertOutput(fromUnixStr("hello\nworld\n\n"));
     }
 
     @Test
     public void testMultipleCommandsWithAssignment() throws Exception {
-        compileAndRun(env, "a=hello; echo $a, world!; a=hi; echo $a, world!");
+        assertSuccess(compileAndRun(env, "a=hello; echo $a, world!; a=hi; echo $a, world!"));
         assertOutput(fromUnixStr("hello, world!\nhi, world!\n"));
     }
 }
