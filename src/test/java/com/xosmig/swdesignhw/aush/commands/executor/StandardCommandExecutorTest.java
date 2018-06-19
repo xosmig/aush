@@ -1,5 +1,6 @@
 package com.xosmig.swdesignhw.aush.commands.executor;
 
+import com.xosmig.swdesignhw.aush.TestBase;
 import com.xosmig.swdesignhw.aush.commands.Command;
 import com.xosmig.swdesignhw.aush.environment.Environment;
 import com.xosmig.swdesignhw.aush.environment.StreamInput;
@@ -16,7 +17,7 @@ import java.io.InputStream;
 
 import static org.junit.Assert.*;
 
-public class StandardCommandExecutorTest {
+public class StandardCommandExecutorTest extends TestBase {
 
     protected Command compile(String command) throws ParseErrorException {
         return BashLikeCommandCompiler.get().compile(command);
@@ -30,9 +31,18 @@ public class StandardCommandExecutorTest {
             .setVarValues(HashTreePMap.singleton("myVar", "myValue"))
             .finish();
 
+    private void compileAndRun(Environment env, String command, String inputData) throws Exception {
+        compileAndRun(env, command, new ByteArrayInputStream(inputData.getBytes()));
+    }
+
+    private void compileAndRun(Environment env, String command, InputStream input) throws Exception {
+        compileAndRun(env.update().setInput(StreamInput.get(input)).finish(), command);
+    }
+
     private void compileAndRun(Environment env, String command) throws Exception {
         compile(command).accept(env, executor);
     }
+
     private void assertOutput(String expected) {
         assertEquals(expected, new String(output.toByteArray()));
     }
@@ -40,12 +50,12 @@ public class StandardCommandExecutorTest {
     @Test
     public void testEchoHelloWorld() throws Exception {
         compileAndRun(env, "echo hello, world!");
-        assertOutput("hello, world!\n");
+        assertOutput(unixStr("hello, world!\n"));
     }
 
     @Test
     public void testWcPoem() throws Exception {
-        final byte[] poem = ("Студенту, не сдавшему экзамен\n" +
+        final String poem = unixStr("Студенту, не сдавшему экзамен\n" +
                 "Бывает, в жизни нет альтернативы.\n" +
                 "Экзамен покидаешь налегке...\n" +
                 "И сессии несданной перспективы,\n" +
@@ -57,12 +67,8 @@ public class StandardCommandExecutorTest {
                 "И, в общем, всё не так уж плохо, братцы.\n" +
                 "И главное во всём – не унывать,\n" +
                 "Легко и бодро жизнью наслаждаться,\n" +
-                "А сессию... успешно пересдать.\n").getBytes();
-        final InputStream input = new ByteArrayInputStream(poem);
-        compile("wc").accept(
-                env.update().setInput(StreamInput.get(input)).finish(),
-                executor
-        );
-        assertOutput("     13      69     779\n");
+                "А сессию... успешно пересдать.\n");
+        compileAndRun(env, "wc", poem);
+        assertOutput(unixStr("     13      69     779\n"));
     }
 }
