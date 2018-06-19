@@ -55,20 +55,21 @@ public class StandardCommandExecutorTest extends TestBase {
 
     @Test
     public void testWcPoem() throws Exception {
-        final String poem = unixStr("Студенту, не сдавшему экзамен\n" +
-                "Бывает, в жизни нет альтернативы.\n" +
-                "Экзамен покидаешь налегке...\n" +
-                "И сессии несданной перспективы,\n" +
-                "Увы! - уже маячат вдалеке.\n" +
-                "Смотри на жизнь с упорным оптимизмом.\n" +
-                "Махни рукой – и с музыкой вперёд!\n" +
-                "В сравнении с глобальным катаклизмом\n" +
-                "Что значит, блин, какой-то незачёт!\n" +
-                "И, в общем, всё не так уж плохо, братцы.\n" +
-                "И главное во всём – не унывать,\n" +
-                "Легко и бодро жизнью наслаждаться,\n" +
-                "А сессию... успешно пересдать.\n");
+        final String poem = unixStr("Farewell to the Highlands, farewell to the North, \n" +
+                        "The birth-place of Valour, the country of Worth; \n" +
+                        "Wherever I wander, wherever I rove, \n" +
+                        "The hills of the Highlands for ever I love. \n" +
+                        "\n" +
+                        "Chorus.-My heart's in the Highlands, my heart is not here, \n" +
+                        "My heart's in the Highlands, a-chasing the deer; \n" +
+                        "Chasing the wild-deer, and following the roe, \n" +
+                        "My heart's in the Highlands, wherever I go. \n" +
+                        "\n" +
+                        "Farewell to the mountains, high-cover'd with snow, \n" +
+                        "Farewell to the straths and green vallies below; \n" +
+                        "Farewell to the forests and wild-hanging woods, \n" +
+                        "Farewell to the torrents and loud-pouring floods. \n");
         compileAndRun(env, "wc", poem);
-        assertOutput(unixStr("     13      69     779\n"));
+        assertOutput(unixStr("     15      93     590\n"));
     }
 }
