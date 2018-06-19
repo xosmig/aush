@@ -75,7 +75,9 @@ public class StandardCommandExecutor implements CommandExecutor {
     @Override
     public Environment execute(Environment env, MultipleCommands cmd) throws IOException, InterruptedException {
         env = cmd.getLeft().accept(env, this);
-        env = cmd.getRight().accept(env, this);
+        if (!env.shouldExit()) {
+            env = cmd.getRight().accept(env, this);
+        }
         return env;
     }
 

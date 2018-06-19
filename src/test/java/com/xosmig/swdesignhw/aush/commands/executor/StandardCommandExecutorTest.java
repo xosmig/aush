@@ -111,4 +111,12 @@ public final class StandardCommandExecutorTest extends TestBase {
         assertSuccess(compileAndRun(env, "a=hello; echo $a, world!; a=hi; echo $a, world!"));
         assertOutput(fromUnixStr("hello, world!\nhi, world!\n"));
     }
+
+    @Test
+    public void testExit() throws Exception {
+        Environment resEnv = compileAndRun(env, "echo hello; exit; echo world!");
+        assertSuccess(resEnv);
+        assertTrue(resEnv.shouldExit());
+        assertOutput(fromUnixStr("hello\n"));
+    }
 }

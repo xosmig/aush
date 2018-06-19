@@ -187,12 +187,14 @@ public final class Environment {
         public int lastExitCode;
         public boolean shouldExit;
 
+        // Always make sure that all fields are assigned here
         private Builder(Environment source) {
             this.input = source.input;
             this.output = source.output;
             this.workingDir = source.workingDir;
             this.varValues = source.varValues;
             this.lastExitCode = source.lastExitCode;
+            this.shouldExit = source.shouldExit;
         }
 
         /**
