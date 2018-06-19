@@ -36,7 +36,7 @@ public class TokenizerTest extends TestBase {
     @Test
     public void testMultipleSeparators() {
         assertEquals(Arrays.asList(plainText("hello,"), plainText("world")),
-                Tokenizer.tokenize(unixStr("hello,\t  \n\n world")));
+                Tokenizer.tokenize(fromUnixStr("hello,\t  \n\n world")));
     }
 
     @Test

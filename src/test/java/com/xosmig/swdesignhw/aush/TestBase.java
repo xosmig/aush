@@ -13,7 +13,7 @@ public class TestBase {
         return new DoubleQuotedToken(CmdString.parse(text));
     }
 
-    protected static String unixStr(String str) {
+    protected static String fromUnixStr(String str) {
         return str.replace("\n", System.lineSeparator());
     }
 }

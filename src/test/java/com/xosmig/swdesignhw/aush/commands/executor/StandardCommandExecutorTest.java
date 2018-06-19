@@ -50,12 +50,13 @@ public class StandardCommandExecutorTest extends TestBase {
     @Test
     public void testEchoHelloWorld() throws Exception {
         compileAndRun(env, "echo hello, world!");
-        assertOutput(unixStr("hello, world!\n"));
+        assertOutput(fromUnixStr("hello, world!\n"));
     }
 
     @Test
     public void testWcPoem() throws Exception {
-        final String poem = unixStr("Farewell to the Highlands, farewell to the North, \n" +
+        // don't use fromUnixStr here, since it would make the test fail on windows
+        final String poem = "Farewell to the Highlands, farewell to the North, \n" +
                         "The birth-place of Valour, the country of Worth; \n" +
                         "Wherever I wander, wherever I rove, \n" +
                         "The hills of the Highlands for ever I love. \n" +
@@ -68,8 +69,8 @@ public class StandardCommandExecutorTest extends TestBase {
                         "Farewell to the mountains, high-cover'd with snow, \n" +
                         "Farewell to the straths and green vallies below; \n" +
                         "Farewell to the forests and wild-hanging woods, \n" +
-                        "Farewell to the torrents and loud-pouring floods. \n");
+                        "Farewell to the torrents and loud-pouring floods. \n";
         compileAndRun(env, "wc", poem);
-        assertOutput(unixStr("     14      93     589\n"));
+        assertOutput(fromUnixStr("     14      93     589\n"));
     }
 }
