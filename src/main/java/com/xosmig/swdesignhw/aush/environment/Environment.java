@@ -152,14 +152,14 @@ public final class Environment {
             CmdChar ch = text.charAt(idx);
 
             if (!ch.equals(CmdChar.get('$', false))) {
-                result.append(ch);
+                result.append(ch.getCh());
                 idx += 1;
                 continue;
             }
 
             Optional<String> varNameOpt = parseVarName(text.substring(idx + 1));
             if (!varNameOpt.isPresent()) {
-                result.append(ch);
+                result.append(ch.getCh());
                 idx += 1;
                 continue;
             }

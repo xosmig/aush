@@ -1,8 +1,6 @@
 package com.xosmig.swdesignhw.aush;
 
-import com.xosmig.swdesignhw.aush.token.CmdString;
-import com.xosmig.swdesignhw.aush.token.DoubleQuotedToken;
-import com.xosmig.swdesignhw.aush.token.PlainTextToken;
+import com.xosmig.swdesignhw.aush.token.*;
 
 public class TestBase {
     protected static PlainTextToken plainText(String text) {
@@ -11,6 +9,10 @@ public class TestBase {
 
     protected static DoubleQuotedToken doubleQuoted(String text) {
         return new DoubleQuotedToken(CmdString.parse(text));
+    }
+
+    protected static ConcatenatableToken concat(ConcatenatableToken left, ConcatenatableToken right) {
+        return ConcatenatedToken.concat(left, right);
     }
 
     protected static String fromUnixStr(String str) {
