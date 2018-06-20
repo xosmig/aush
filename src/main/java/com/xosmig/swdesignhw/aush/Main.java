@@ -2,6 +2,12 @@ package com.xosmig.swdesignhw.aush;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        try {
+            new CommandLineShell().run();
+        } catch (InterruptedException e) {
+            // unreachable
+            e.printStackTrace();
+            System.exit(2);
+        }
     }
 }
