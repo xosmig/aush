@@ -179,13 +179,13 @@ public final class Environment {
      * Use <code>Environment.builder()</code> and <code>Environment.update()</code>
      * to create a new builder.
      */
-    public static class Builder {
-        public Input input;
-        public Output output;
-        public Path workingDir;
-        public PMap<String, String> varValues;
-        public int lastExitCode;
-        public boolean shouldExit;
+    public final static class Builder {
+        private Input input;
+        private Output output;
+        private Path workingDir;
+        private PMap<String, String> varValues;
+        private int lastExitCode;
+        private boolean shouldExit;
 
         // Always make sure that all fields are assigned here
         private Builder(Environment source) {
