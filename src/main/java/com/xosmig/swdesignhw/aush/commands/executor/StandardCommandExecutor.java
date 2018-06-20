@@ -99,39 +99,51 @@ public final class StandardCommandExecutor implements CommandExecutor {
     public Environment execute(Environment env, PipeCommand cmd) throws IOException, InterruptedException {
         final Pipe pipe = Pipe.get();
 
-        final ExecutorService leftService = Executors.newSingleThreadExecutor();
-        final CompletableFuture<Void> leftFuture = CompletableFuture.runAsync(() -> {
-            try {
-                cmd.getSource().accept(env.update().setOutput(pipe.getOutput()).finish(), this);
-                pipe.getOutput().close();
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }, leftService);
-
-        final ExecutorService rightService = Executors.newSingleThreadExecutor();
-        final CompletableFuture<Environment> rightFuture = CompletableFuture.supplyAsync(() -> {
-            try {
-                final Environment result =
-                        cmd.getDestination().accept(env.update().setInput(pipe.getInput()).finish(), this);
-                // We have to read all the bytes from the input stream to avoid the writer hang
-                // waiting for the capacity.
-                // Closing the InputStream is a bad idea, since it would cause an unwanted exception
-                // in the writer.
-                Utils.redirectStream(pipe.getInput().inputStream(), new NullOutputStream());
-                return result;
-            } catch (Exception e) {
-                throw new CompletionException(e);
-            }
-        }, rightService);
+        ExecutorService leftService = null;
+        ExecutorService rightService = null;
 
         try {
-            waitBothOrException(leftFuture, rightFuture);
-            return env.update().setLastExitCode(rightFuture.get().getLastExitCode()).finish();
-        } catch (ExecutionException e) {
-            // We throw `ShellInternalException` here since all meaningful possible instances
-            // of ExecutionException are unwrapped inside `waitBothOrException` method.
-            throw new ShellInternalException(e.getCause());
+            leftService = Executors.newSingleThreadExecutor();
+            final CompletableFuture<Void> leftFuture = CompletableFuture.runAsync(() -> {
+                try {
+                    cmd.getSource().accept(env.update().setOutput(pipe.getOutput()).finish(), this);
+                    pipe.getOutput().close();
+                } catch (Exception e) {
+                    throw new CompletionException(e);
+                }
+            }, leftService);
+
+            rightService = Executors.newSingleThreadExecutor();
+            final CompletableFuture<Environment> rightFuture = CompletableFuture.supplyAsync(() -> {
+                try {
+                    final Environment result =
+                            cmd.getDestination().accept(env.update().setInput(pipe.getInput()).finish(), this);
+                    // We have to read all the bytes from the input stream to avoid the writer hang
+                    // waiting for the capacity.
+                    // Closing the InputStream is a bad idea, since it would cause an unwanted exception
+                    // in the writer.
+                    Utils.redirectStream(pipe.getInput().inputStream(), new NullOutputStream());
+                    return result;
+                } catch (Exception e) {
+                    throw new CompletionException(e);
+                }
+            }, rightService);
+
+            try {
+                waitBothOrException(leftFuture, rightFuture);
+                return env.update().setLastExitCode(rightFuture.get().getLastExitCode()).finish();
+            } catch (ExecutionException e) {
+                // We throw `ShellInternalException` here since all meaningful possible instances
+                // of ExecutionException are unwrapped inside `waitBothOrException` method.
+                throw new ShellInternalException(e.getCause());
+            }
+        } finally {
+            if (leftService != null) {
+                leftService.shutdown();
+            }
+            if (rightService != null) {
+                rightService.shutdown();
+            }
         }
     }
 

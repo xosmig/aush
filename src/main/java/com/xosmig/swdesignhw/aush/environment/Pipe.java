@@ -21,9 +21,18 @@ public final class Pipe {
      * Returns a {@code Pipe} object. See class-level documentation.
      */
     public static Pipe get() {
-        // this seems to be the only cross-platform approach, although it's not really efficient
+        // this implementation is super-slow :(
+        // but there seems to be no simple cross-platform way to use native pipes
+        // throughput is about 10MB / second on my laptop.
+        // (tested with `date; bash -c 'cat ~/tmp/input.txt' | bash -c 'cat > /dev/null'; date`)
+        // apart from small throughput, there are other problems,
+        // such as periodical "pauses" when you do `cat /some/large/file | cat`.
+
+        // Attempt to further increase the buffer size to 16MB
+        // actually decreased throughput on my system significantly (about 3 times).
+
         // Do not try to reuse streams, since they might be closed.
-        PipedInputStream ins = new PipedInputStream();
+        PipedInputStream ins = new PipedInputStream(16 * 1024);
         PipedOutputStream outs = new PipedOutputStream();
 
         try {
