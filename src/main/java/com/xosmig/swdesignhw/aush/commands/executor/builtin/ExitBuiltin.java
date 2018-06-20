@@ -5,7 +5,7 @@ import com.xosmig.swdesignhw.aush.environment.Environment;
 import java.util.List;
 
 /**
- * {@code `exit`} command just informs the user interface that the used wants to exit the shell.
+ * {@code exit} command just informs the user interface that the used wants to exit the shell.
  */
 public final class ExitBuiltin implements Builtin {
 

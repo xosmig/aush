@@ -36,6 +36,7 @@ public final class StandardCommandExecutor implements CommandExecutor {
         BUILTINS.put("echo", new EchoBuiltin());
         BUILTINS.put("wc", new WcBuiltin());
         BUILTINS.put("cat", new CatBuiltin());
+        BUILTINS.put("grep", new GrepBuiltin());
     }
 
     private StandardCommandExecutor() {
