@@ -14,34 +14,38 @@ import java.util.List;
  */
 public final class WcBuiltin implements Builtin {
 
-    private WcResult doCount(String data) {
-        String[] wordArray = data.trim().split("\\s+");
-        byte[] bytes = data.getBytes();
+    private WcResult doWcBytes(byte[] bytes, int length) {
+        final String data = new String(bytes, 0, length);
+        final long words = data.trim().split("\\s+").length;
 
         long newlines = 0;
-        for (byte b : bytes) {
-            if (b == '\n') {
+        for (int i = 0; i < data.length(); i++) {
+            if (data.charAt(i) == '\n') {
                 newlines++;
             }
         }
+
         return new WcResult(
                 newlines,
-                wordArray.length,
-                bytes.length,
-                Character.isWhitespace(data.charAt(0)),
-                Character.isWhitespace(data.charAt(data.length() - 1))
+                words,
+                length,
+                Character.isWhitespace(bytes[0]),
+                Character.isWhitespace(bytes[length - 1])
         );
     }
 
-    private WcResult doCount(InputStream input) throws IOException {
-        byte[] buf = new byte[4096];
+    private WcResult doWcStream(InputStream input) throws IOException {
+        // the size of the buffer must be a multiple of at least 16
+        // to avoid splitting unicode characters
+        byte[] buf = new byte[16 * 1024 * 1024];
+
         WcResult res = null;
         while (true) {
             int read = input.read(buf);
             if (read == -1) {
                 break;
             }
-            res = WcResult.sum(res, doCount(new String(buf, 0, read)));
+            res = WcResult.sum(res, doWcBytes(buf, read));
         }
         return res;
     }
@@ -59,7 +63,7 @@ public final class WcBuiltin implements Builtin {
     public Environment execute(Environment env, List<String> args) throws InterruptedException {
         if (args.isEmpty()) {
             try {
-                WcResult res = doCount(env.inputStream());
+                WcResult res = doWcStream(env.inputStream());
                 printResult(env, null, res);
             } catch (IOException e) {
                 env.printStream().println("Error: " + e.getMessage());
@@ -75,7 +79,7 @@ public final class WcBuiltin implements Builtin {
             }
             try {
                 Path filePath = Paths.get(filename);
-                WcResult res = doCount(Files.newInputStream(filePath));
+                WcResult res = doWcStream(Files.newInputStream(filePath));
                 printResult(env, filePath, res);
             } catch (IOException e) {
                 env.printStream().println("wc: " + e.getMessage());
